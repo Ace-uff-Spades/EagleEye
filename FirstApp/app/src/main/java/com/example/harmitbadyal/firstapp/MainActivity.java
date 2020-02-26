@@ -60,22 +60,21 @@ public class MainActivity extends AppCompatActivity {
         {
             Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
         }
-        listen();
-        hello();
+       implementListeners();
     }
 
-    public void hello()
+
+
+    public void implementListeners()
     {
-        listen.setOnClickListener(new View.OnClickListener() {
+
+        hello.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-            sendReceive.write("hello".getBytes());
+                sendReceive.write("hello".getBytes());
             }
         });
-    }
 
-    public void listen()
-    {
         listen.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -83,6 +82,7 @@ public class MainActivity extends AppCompatActivity {
                 serverClass.start();
             }
         });
+
     }
 
     Handler handler = new Handler(new Handler.Callback() {
