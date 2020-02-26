@@ -1,2 +1,2 @@
-# EagleEye
+# Eagle Eye
 Capstone Project
