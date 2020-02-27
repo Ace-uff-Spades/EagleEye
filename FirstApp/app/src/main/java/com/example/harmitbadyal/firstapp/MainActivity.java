@@ -13,9 +13,12 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -27,6 +30,7 @@ import org.w3c.dom.Text;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Set;
 import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
@@ -35,7 +39,8 @@ public class MainActivity extends AppCompatActivity {
     BluetoothDevice[] btArray;
     TextView status;
     TextView msg_box;
-    Button listen,hello;
+    ListView listView;
+    Button listen,hello,listDevices;
     SendReceive sendReceive;
     static final int STATE_LISTENING=1;
     static final int STATE_CONNECTING=2;
@@ -45,7 +50,8 @@ public class MainActivity extends AppCompatActivity {
     int REQUEST_ENABLE_BLUETOOTH=1;
 
     private static final String APP_NAME = "BTChat";
-    private static final UUID MY_UUID = UUID.fromString("3ae567ef-1e63-4bdf-a586-1e622705ffe5");
+    private static final UUID MY_UUID = UUID.fromString("3be2c57b-1b29-461e-b08b-ad008c61534a");
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,7 +60,11 @@ public class MainActivity extends AppCompatActivity {
         status = findViewById(R.id.status);
         listen = findViewById(R.id.listen);
         hello = findViewById(R.id.hello);
+        listDevices=findViewById(R.id.listDevices);
+        listView=findViewById(R.id.listView);
         msg_box=findViewById(R.id.msg_box);
+
+        //status.setText(bluetoothAdapter.getName());
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if(!bluetoothAdapter.isEnabled())
         {
@@ -67,6 +77,27 @@ public class MainActivity extends AppCompatActivity {
 
     public void implementListeners()
     {
+        listDevices.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Set<BluetoothDevice> bt = bluetoothAdapter.getBondedDevices();
+                String[] strings = new String[bt.size()];
+                btArray=new BluetoothDevice[bt.size()];
+                int index = 0;
+
+                if(bt.size()>0)
+                {
+                    for(BluetoothDevice device : bt)
+                    {
+                        btArray[index]=device;
+                        strings[index]=device.getName();
+                        index++;
+                    }
+                    ArrayAdapter<String> arrayAdapter=new ArrayAdapter<>(getApplicationContext(),android.R.layout.simple_list_item_1,strings);
+                    listView.setAdapter(arrayAdapter);
+                }
+            }
+        });
 
         hello.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -75,14 +106,24 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        listen.setOnClickListener(new View.OnClickListener() {
+       /* listen.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ServerClass serverClass=new ServerClass();
-                serverClass.start();
+                //ServerClass serverClass=new ServerClass();
+                //serverClass.start();
+                ClientClass clientClass = new ClientClass();
+                clientClass.start();
             }
         });
-
+        */
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int i, long id) {
+                ClientClass clientClass = new ClientClass(btArray[i]);
+                clientClass.start();
+                status.setText("Connecting");
+            }
+        });
     }
 
     Handler handler = new Handler(new Handler.Callback() {
@@ -112,6 +153,40 @@ public class MainActivity extends AppCompatActivity {
         }
     });
 
+    private BluetoothDevice device;
+    private BluetoothSocket socket;
+
+    private class ClientClass extends Thread
+    {
+        public ClientClass (BluetoothDevice device1)
+        {
+            device = device1;
+            try {
+                socket = device.createRfcommSocketToServiceRecord(MY_UUID);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }
+    }
+
+    public void run()
+    {
+        try {
+            socket.connect();
+            Message message=Message.obtain();
+            message.what = STATE_CONNECTED;
+            handler.sendMessage(message);
+            sendReceive=new SendReceive(socket);
+            sendReceive.start();
+        } catch (IOException e) {
+            e.printStackTrace();
+            Message message=Message.obtain();
+            message.what = STATE_CONNECTION_FAILED;
+            handler.sendMessage(message);
+        }
+    }
+
     private class ServerClass extends Thread
     {
         private BluetoothServerSocket serverSocket;
@@ -119,12 +194,13 @@ public class MainActivity extends AppCompatActivity {
         public ServerClass()
         {
             try {
-                serverSocket=bluetoothAdapter.listenUsingRfcommWithServiceRecord(APP_NAME,MY_UUID);
+                serverSocket=bluetoothAdapter.listenUsingRfcommWithServiceRecord(bluetoothAdapter.getName(),MY_UUID);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
 
+        /*
         public void run()
         {
             BluetoothSocket socket = null;
@@ -153,6 +229,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
+        */
     }
 
     private class SendReceive extends Thread
@@ -180,6 +257,7 @@ public class MainActivity extends AppCompatActivity {
             inputStream=tempIn;
             outputStream=tempOut;
         }
+
         public void run()
         {
             byte[] buffer = new byte[1024];
@@ -195,6 +273,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
+
         public void write(byte[]bytes)
         {
             try {

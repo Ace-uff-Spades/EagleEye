@@ -29,6 +29,7 @@ if len(service_matches) == 0:
     sys.exit(0)
 
 first_match = service_matches[0]
+
 port = first_match["port"]
 name = first_match["name"]
 host = first_match["host"]
