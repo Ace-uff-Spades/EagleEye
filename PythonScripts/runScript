@@ -1,0 +1,4 @@
+#!/bin/bash
+
+sudo hciconfig hc0 piscan
+sudo python server.py
