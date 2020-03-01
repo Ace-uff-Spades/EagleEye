@@ -5,27 +5,15 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
-import android.icu.util.Output;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import org.w3c.dom.Text;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,11 +24,10 @@ import java.util.UUID;
 public class MainActivity extends AppCompatActivity {
 
     BluetoothAdapter bluetoothAdapter;
-    BluetoothDevice[] btArray;
+    BluetoothDevice btDevice;
     TextView status;
     TextView msg_box;
-    ListView listView;
-    Button listen,hello,listDevices;
+    Button connect,hello,findDevice;
     SendReceive sendReceive;
     static final int STATE_LISTENING=1;
     static final int STATE_CONNECTING=2;
@@ -50,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
     int REQUEST_ENABLE_BLUETOOTH=1;
 
     private static final String APP_NAME = "BTChat";
-    private static final UUID MY_UUID = UUID.fromString("3be2c57b-1b29-461e-b08b-ad008c61534a");
+    private static final UUID MY_UUID = UUID.fromString("94f39d29-7d6d-437d-973b-fba39e49d4ee");
 
 
     @Override
@@ -58,10 +45,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         status = findViewById(R.id.status);
-        listen = findViewById(R.id.listen);
+        connect = findViewById(R.id.connect);
         hello = findViewById(R.id.hello);
-        listDevices=findViewById(R.id.listDevices);
-        listView=findViewById(R.id.listView);
+        findDevice=findViewById(R.id.findDevice);
         msg_box=findViewById(R.id.msg_box);
 
         //status.setText(bluetoothAdapter.getName());
@@ -77,53 +63,40 @@ public class MainActivity extends AppCompatActivity {
 
     public void implementListeners()
     {
-        listDevices.setOnClickListener(new View.OnClickListener() {
+        findDevice.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Set<BluetoothDevice> bt = bluetoothAdapter.getBondedDevices();
                 String[] strings = new String[bt.size()];
-                btArray=new BluetoothDevice[bt.size()];
                 int index = 0;
 
                 if(bt.size()>0)
                 {
                     for(BluetoothDevice device : bt)
                     {
-                        btArray[index]=device;
-                        strings[index]=device.getName();
-                        index++;
+                        if(device.getName().equals("raspberrypi"))
+                        {
+                            btDevice = device;
+                            status.setText("Found Device!");
+                        }
                     }
-                    ArrayAdapter<String> arrayAdapter=new ArrayAdapter<>(getApplicationContext(),android.R.layout.simple_list_item_1,strings);
-                    listView.setAdapter(arrayAdapter);
                 }
             }
         });
-
         hello.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 sendReceive.write("hello".getBytes());
             }
         });
-
-       /* listen.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //ServerClass serverClass=new ServerClass();
-                //serverClass.start();
-                ClientClass clientClass = new ClientClass();
-                clientClass.start();
-            }
-        });
-        */
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int i, long id) {
-                ClientClass clientClass = new ClientClass(btArray[i]);
-                clientClass.start();
-                status.setText("Connecting");
-            }
-        });
+          connect.setOnClickListener(new View.OnClickListener() {
+              @Override
+              public void onClick(View v) {
+                  ClientClass clientClass = new ClientClass(btDevice);
+                  clientClass.start();
+                  status.setText("Connecting");
+              }
+          });
     }
 
     Handler handler = new Handler(new Handler.Callback() {
@@ -148,6 +121,15 @@ public class MainActivity extends AppCompatActivity {
                     String tempMsg=new String(readBuff,0,msg.arg1);
                     msg_box.setText(tempMsg);
                     break;
+                case 9:
+                    status.setText("Creating Socket");
+                    break;
+                case 10:
+                    status.setText("Socket Created!");
+                    break;
+                case 11:
+                    status.setText("Runable Begins");
+                    break;
             }
             return false;
         }
@@ -162,30 +144,39 @@ public class MainActivity extends AppCompatActivity {
         {
             device = device1;
             try {
+                Message message=Message.obtain();
+                message.what = 9;
+                handler.sendMessage(message);
+
                 socket = device.createRfcommSocketToServiceRecord(MY_UUID);
+
+                message=Message.obtain();
+                message.what = 10;
+                handler.sendMessage(message);
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
+        }
+        public void run()
+        {
+            try {
+                socket.connect();
+                Message message=Message.obtain();
+                message.what = STATE_CONNECTED;
+                handler.sendMessage(message);
+                sendReceive=new SendReceive(socket);
+                sendReceive.start();
+            } catch (IOException e) {
+                e.printStackTrace();
+                Message message=Message.obtain();
+                message.what = STATE_CONNECTION_FAILED;
+                handler.sendMessage(message);
+            }
         }
     }
 
-    public void run()
-    {
-        try {
-            socket.connect();
-            Message message=Message.obtain();
-            message.what = STATE_CONNECTED;
-            handler.sendMessage(message);
-            sendReceive=new SendReceive(socket);
-            sendReceive.start();
-        } catch (IOException e) {
-            e.printStackTrace();
-            Message message=Message.obtain();
-            message.what = STATE_CONNECTION_FAILED;
-            handler.sendMessage(message);
-        }
-    }
+
 
     private class ServerClass extends Thread
     {

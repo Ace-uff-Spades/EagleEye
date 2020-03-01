@@ -21,10 +21,10 @@
         app:layout_constraintVertical_bias="0.102" />
 
     <Button
-        android:id="@+id/listen"
+        android:id="@+id/connect"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Listen"
+        android:text="connect"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.049"
@@ -57,7 +57,7 @@
         app:layout_constraintVertical_bias="0.194" />
 
     <Button
-        android:id="@+id/listDevices"
+        android:id="@+id/findDevice"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="List Devices"
@@ -66,16 +66,5 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.194" />
-
-    <ListView
-        android:id="@+id/listView"
-        android:layout_width="374dp"
-        android:layout_height="276dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.486"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.526" />
 
 </android.support.constraint.ConstraintLayout>
