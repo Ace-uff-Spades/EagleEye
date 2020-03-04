@@ -1,0 +1,3 @@
+option batch abort
+option confirm off
+open sftp://pi:harmit1@raspberrypi.local/ -hostkey=""
