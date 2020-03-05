@@ -12,6 +12,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -27,8 +28,9 @@ public class MainActivity extends AppCompatActivity {
     BluetoothDevice btDevice;
     TextView status;
     TextView msg_box;
-    Button connect,hello,findDevice;
+    Button connect,sendMessage,findDevice;
     SendReceive sendReceive;
+    EditText message;
     static final int STATE_LISTENING=1;
     static final int STATE_CONNECTING=2;
     static final int STATE_CONNECTED=3;
@@ -46,10 +48,10 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         status = findViewById(R.id.status);
         connect = findViewById(R.id.connect);
-        hello = findViewById(R.id.hello);
+        sendMessage = findViewById(R.id.sendMessage);
         findDevice=findViewById(R.id.findDevice);
         msg_box=findViewById(R.id.msg_box);
-
+        message = findViewById(R.id.message);
         //status.setText(bluetoothAdapter.getName());
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if(!bluetoothAdapter.isEnabled())
@@ -72,6 +74,7 @@ public class MainActivity extends AppCompatActivity {
 
                 if(bt.size()>0)
                 {
+                    status.setText("Finding Device");
                     for(BluetoothDevice device : bt)
                     {
                         if(device.getName().equals("raspberrypi"))
@@ -83,10 +86,11 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-        hello.setOnClickListener(new View.OnClickListener() {
+        sendMessage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 sendReceive.write("hello".getBytes());
+                //message.getText().toString()
             }
         });
           connect.setOnClickListener(new View.OnClickListener() {
