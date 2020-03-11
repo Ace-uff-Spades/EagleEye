@@ -1,29 +1,37 @@
 package com.example.droneapp
 
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.content.ServiceConnection
 import android.os.Bundle
-import com.google.android.material.snackbar.Snackbar
-import androidx.appcompat.app.AppCompatActivity
+import android.os.IBinder
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Button
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.parrot.arsdk.ardiscovery.ARDiscoveryService
+import com.parrot.arsdk.ardiscovery.ARDiscoveryService.LocalBinder
+import com.parrot.arsdk.ardiscovery.receivers.ARDiscoveryServicesDevicesListUpdatedReceiver
 import com.parrot.drone.groundsdk.GroundSdk
 import com.parrot.drone.groundsdk.ManagedGroundSdk
 import com.parrot.drone.groundsdk.Ref
 import com.parrot.drone.groundsdk.device.DeviceState
 import com.parrot.drone.groundsdk.device.Drone
 import com.parrot.drone.groundsdk.device.instrument.BatteryInfo
+import com.parrot.drone.groundsdk.device.pilotingitf.Activable
 import com.parrot.drone.groundsdk.device.pilotingitf.ManualCopterPilotingItf
 import com.parrot.drone.groundsdk.facility.AutoConnection
-import com.parrot.drone.groundsdk.device.pilotingitf.Activable
 
-import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
 
 
 
-    private lateinit var takeOffLandBt: Button
+    internal lateinit var takeOffLandBt: Button
 
     private var droneBatteryInfoRef: Ref<BatteryInfo>? = null
 
@@ -33,27 +41,61 @@ class MainActivity : AppCompatActivity() {
 
     private var droneStateRef: Ref<DeviceState>? = null
 
+    private var mArdiscoveryService: ARDiscoveryService? = null
+
+    private var mArdiscoveryServiceConnection: ServiceConnection? = null
+
     /** Drone state text view. */
-    private lateinit var droneStateTxt: TextView
+    internal lateinit var droneStateTxt: TextView
     /** Drone battery level text view. */
-    private lateinit var droneBatteryTxt: TextView
+    internal lateinit var droneBatteryTxt: TextView
 
     private var pilotingItfRef: Ref<ManualCopterPilotingItf>? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+
         // Get user interface instances.
-        droneBatteryTxt = findViewById(R.id.droneBatteryTxt)
-        takeOffLandBt = findViewById(R.id.takeOffLandBt)
-        droneStateTxt = findViewById(R.id.droneStateTxt)
+        droneBatteryTxt = findViewById<TextView>(R.id.droneBatteryTxt)
+        takeOffLandBt = findViewById<Button>(R.id.takeOffLandBt)
+        droneStateTxt = findViewById<TextView>(R.id.droneStateTxt)
         takeOffLandBt.setOnClickListener {onTakeOffLandClick()}
 
         // Initialize user interface default values.
         droneStateTxt.text = DeviceState.ConnectionState.DISCONNECTED.toString()
 
         groundSdk = ManagedGroundSdk.obtainSession(this)
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+    }
+
+    private fun initDiscoveryService() {
+        // create the service connection
+        if (mArdiscoveryServiceConnection == null) {
+            mArdiscoveryServiceConnection = object : ServiceConnection {
+                override fun onServiceConnected(name: ComponentName, service: IBinder) {
+                    mArdiscoveryService = (service as LocalBinder).service
+                    startDiscovery()
+                }
+
+                override fun onServiceDisconnected(name: ComponentName) {
+                    mArdiscoveryService = null
+                }
+            }
+        }
+        if (mArdiscoveryService == null) {
+            // if the discovery service doesn't exists, bind to it
+            val i = Intent(applicationContext, ARDiscoveryService::class.java)
+            applicationContext.bindService(i, mArdiscoveryServiceConnection!!, Context.BIND_AUTO_CREATE)
+        } else {
+            // if the discovery service already exists, start discovery
+            startDiscovery()
+        }
+    }
+
+    private fun startDiscovery() {
+        mArdiscoveryService?.start()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -75,13 +117,15 @@ class MainActivity : AppCompatActivity() {
     override fun onStart()
     {
         super.onStart();
+        Log.e("START:", "ONSTART() METHOD RUNNING!")
         // Monitor the auto connection facility.
         groundSdk.getFacility(AutoConnection::class.java) {
             // Called when the auto connection facility is available and when it changes.
 
             it?.let{
                 // Start auto connection.
-                if (it.status != AutoConnection.Status.STARTED) {
+                Log.e("AUTO CONNECTION RUNNING:", it.status.toString())
+                if (it.status != AutoConnection.Status.STARTED){
                     it.start()
                 }
                 if (drone?.uid != it.drone?.uid) {
@@ -93,6 +137,7 @@ class MainActivity : AppCompatActivity() {
 
                     // Monitor the new drone.
                     drone = it.drone
+                    Log.e("DRONE FOUND:", drone?.uid)
                     if(drone != null) {
                         startDroneMonitors()
                     }
