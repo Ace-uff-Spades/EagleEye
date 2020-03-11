@@ -5,7 +5,6 @@ apply plugin: 'kotlin-android-extensions'
 android {
     compileSdkVersion 29
 
-
     defaultConfig {
         applicationId "com.example.droneapp"
         minSdkVersion 24
@@ -53,4 +52,7 @@ dependencies {
     //groundSDK Dependencies
     implementation 'com.parrot.drone.groundsdk:groundsdk:1.1.2'
     runtimeOnly 'com.parrot.drone.groundsdk:arsdkengine:1.1.2'
+
+    //Parrot Dependencies
+    implementation 'com.parrot:arsdk:3.13.1'
 }
