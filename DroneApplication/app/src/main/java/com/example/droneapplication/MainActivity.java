@@ -47,6 +47,31 @@ public class MainActivity extends AppCompatActivity {
 
     ListView wifiViewer;
 
+    private final ARDiscoveryServicesDevicesListUpdatedReceiverDelegate mDiscoveryDelegate =
+            new ARDiscoveryServicesDevicesListUpdatedReceiverDelegate() {
+
+                @Override
+                public void onServicesDevicesListUpdated() {
+                    viewer.setText("got inside");
+                    if (mArdiscoveryService != null) {
+                        List<ARDiscoveryDeviceService> deviceList = mArdiscoveryService.getDeviceServicesArray();
+                        String [] deviceListString = {"potato,cheese,milk,doodh"};
+                        /*int x=1;
+                        deviceListString[0]=deviceList.size()+"";
+                        for(ARDiscoveryDeviceService device1:deviceList)
+                        {
+                            deviceListString[x]=device1.toString();
+                            x++;
+                        }
+                         */
+                        ArrayAdapter <String> adapter = new ArrayAdapter(getApplicationContext(),layout.simple_list_item_1,deviceListString);
+                        wifiViewer.setAdapter(adapter);
+                        viewer.setText("finished");
+                        // Do what you want with the device list
+                    }
+                }
+            };
+
     public MainActivity() {
         this.mArdiscoveryServicesDevicesListUpdatedReceiver = null;
         this.mContext = null;
@@ -61,6 +86,7 @@ public class MainActivity extends AppCompatActivity {
         viewer = findViewById(R.id.viewer);
         ARSDK.loadSDKLibs();
         implementListeners();
+        mDiscoveryDelegate.onServicesDevicesListUpdated();
         initDiscoveryService();
     }
 
@@ -127,31 +153,6 @@ public class MainActivity extends AppCompatActivity {
         localBroadcastMgr.registerReceiver(receiver,
                 new IntentFilter(ARDiscoveryService.kARDiscoveryServiceNotificationServicesDevicesListUpdated));
     }
-
-    private final ARDiscoveryServicesDevicesListUpdatedReceiverDelegate mDiscoveryDelegate =
-            new ARDiscoveryServicesDevicesListUpdatedReceiverDelegate() {
-
-                @Override
-                public void onServicesDevicesListUpdated() {
-                    viewer.setText("got inside");
-                    if (mArdiscoveryService != null) {
-                        List<ARDiscoveryDeviceService> deviceList = mArdiscoveryService.getDeviceServicesArray();
-                        String [] deviceListString = {"potato,cheese,milk,doodh"};
-                        /*int x=1;
-                        deviceListString[0]=deviceList.size()+"";
-                        for(ARDiscoveryDeviceService device1:deviceList)
-                        {
-                            deviceListString[x]=device1.toString();
-                            x++;
-                        }
-                         */
-                        ArrayAdapter <String> adapter = new ArrayAdapter(getApplicationContext(),layout.simple_list_item_1,deviceListString);
-                        wifiViewer.setAdapter(adapter);
-                        viewer.setText("finished");
-                        // Do what you want with the device list
-                    }
-                }
-            };
 
     private ARDiscoveryDevice createDiscoveryDevice(@NonNull ARDiscoveryDeviceService service) {
         ARDiscoveryDevice device = null;

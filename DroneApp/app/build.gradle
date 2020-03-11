@@ -54,3 +54,4 @@ dependencies {
     implementation 'com.parrot.drone.groundsdk:groundsdk:1.1.2'
     runtimeOnly 'com.parrot.drone.groundsdk:arsdkengine:1.1.2'
 }
+
