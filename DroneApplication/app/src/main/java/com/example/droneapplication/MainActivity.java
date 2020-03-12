@@ -29,13 +29,15 @@ import com.parrot.arsdk.ardiscovery.receivers.ARDiscoveryServicesDevicesListUpda
 
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements ARDiscoveryServicesDevicesListUpdatedReceiverDelegate {
 
     private static final String TAG = "DroneDiscoverer";
 
     private final Context mContext;
 
-    private final ARDiscoveryServicesDevicesListUpdatedReceiver mArdiscoveryServicesDevicesListUpdatedReceiver;
+    private ARDiscoveryDeviceService myDeviceService;
+
+    private ARDiscoveryServicesDevicesListUpdatedReceiver mArdiscoveryServicesDevicesListUpdatedReceiver;
 
     private ARDiscoveryService mArdiscoveryService;
 
@@ -47,30 +49,7 @@ public class MainActivity extends AppCompatActivity {
 
     ListView wifiViewer;
 
-    private final ARDiscoveryServicesDevicesListUpdatedReceiverDelegate mDiscoveryDelegate =
-            new ARDiscoveryServicesDevicesListUpdatedReceiverDelegate() {
 
-                @Override
-                public void onServicesDevicesListUpdated() {
-                    viewer.setText("got inside");
-                    if (mArdiscoveryService != null) {
-                        List<ARDiscoveryDeviceService> deviceList = mArdiscoveryService.getDeviceServicesArray();
-                        String [] deviceListString = {"potato,cheese,milk,doodh"};
-                        /*int x=1;
-                        deviceListString[0]=deviceList.size()+"";
-                        for(ARDiscoveryDeviceService device1:deviceList)
-                        {
-                            deviceListString[x]=device1.toString();
-                            x++;
-                        }
-                         */
-                        ArrayAdapter <String> adapter = new ArrayAdapter(getApplicationContext(),layout.simple_list_item_1,deviceListString);
-                        wifiViewer.setAdapter(adapter);
-                        viewer.setText("finished");
-                        // Do what you want with the device list
-                    }
-                }
-            };
 
     public MainActivity() {
         this.mArdiscoveryServicesDevicesListUpdatedReceiver = null;
@@ -84,10 +63,34 @@ public class MainActivity extends AppCompatActivity {
         findNetworks = findViewById(R.id.findNetworks);
         wifiViewer = findViewById(R.id.wifiViewer);
         viewer = findViewById(R.id.viewer);
-        ARSDK.loadSDKLibs();
-        implementListeners();
-        mDiscoveryDelegate.onServicesDevicesListUpdated();
         initDiscoveryService();
+        ARSDK.loadSDKLibs();
+        initDiscoveryService();
+        registerReceivers();
+        implementListeners();
+    }
+
+
+    public void onServicesDevicesListUpdated() {
+        viewer.setText("got inside");
+
+        if (mArdiscoveryService != null) {
+
+            List<ARDiscoveryDeviceService> deviceList = mArdiscoveryService.getDeviceServicesArray();
+
+            String [] deviceListString = new String[deviceList.size()];
+            int x=0;
+                for(ARDiscoveryDeviceService device1:deviceList)
+                {
+                    deviceListString[x]=device1.toString();
+                    x++;
+                }
+            ArrayAdapter <String> adapter = new ArrayAdapter(this,layout.simple_list_item_1,deviceListString);
+            wifiViewer.setAdapter(adapter);
+            viewer.setText(deviceList.size()+"");
+            myDeviceService = deviceList.get(0);
+            // Do what you want with the device list
+        }
     }
 
     private void implementListeners()
@@ -95,7 +98,7 @@ public class MainActivity extends AppCompatActivity {
         findNetworks.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                registerReceivers();
+                onServicesDevicesListUpdated();
             }
         });
     }
@@ -146,12 +149,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void registerReceivers()
     {
-        viewer.setText("reached here");
-        ARDiscoveryServicesDevicesListUpdatedReceiver receiver =
-                new ARDiscoveryServicesDevicesListUpdatedReceiver(mDiscoveryDelegate);
+        mArdiscoveryServicesDevicesListUpdatedReceiver = new ARDiscoveryServicesDevicesListUpdatedReceiver((ARDiscoveryServicesDevicesListUpdatedReceiverDelegate) this);
         LocalBroadcastManager localBroadcastMgr = LocalBroadcastManager.getInstance(getApplicationContext());
-        localBroadcastMgr.registerReceiver(receiver,
-                new IntentFilter(ARDiscoveryService.kARDiscoveryServiceNotificationServicesDevicesListUpdated));
+        localBroadcastMgr.registerReceiver(mArdiscoveryServicesDevicesListUpdatedReceiver, new IntentFilter(ARDiscoveryService.kARDiscoveryServiceNotificationServicesDevicesListUpdated));
     }
 
     private ARDiscoveryDevice createDiscoveryDevice(@NonNull ARDiscoveryDeviceService service) {

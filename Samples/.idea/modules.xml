@@ -2,8 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/Contributions/Android/JumpingSumo/app/src/main/main.iml" filepath="$PROJECT_DIR$/Contributions/Android/JumpingSumo/app/src/main/main.iml" />
-      <module fileurl="file://$PROJECT_DIR$/Android/SDKSample/app/src/main/main1.iml" filepath="$PROJECT_DIR$/Android/SDKSample/app/src/main/main1.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Samples.iml" filepath="$PROJECT_DIR$/.idea/modules/Samples.iml" group="Samples" />
     </modules>
   </component>
 </project>

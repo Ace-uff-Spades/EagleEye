@@ -1,88 +1,123 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="90ec0f55-7085-4101-82a5-7c0b91c24b2f" name="Default Changelist" comment="" />
-    <ignored path="$PROJECT_DIR$/out/" />
+    <list default="true" id="80c47459-9bf0-49c1-a421-b2ee6e8e8fed" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/.gradle/5.6.4/fileChanges/last-build.bin" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.gradle/5.6.4/fileHashes/fileHashes.lock" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.gradle/5.6.4/gc.properties" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/cache.properties" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.gradle/vcs-1/gc.properties" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/caches/build_file_checksums.ser" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules/Samples.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Samples.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.jar" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.properties" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/gradlew" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/gradlew.bat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../DroneApp/app/src/main/java/com/example/droneapp/MainActivity.kt" beforeDir="false" afterPath="$PROJECT_DIR$/../DroneApp/app/src/main/java/com/example/droneapp/MainActivity.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../DroneApp/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/../DroneApp/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/gradle_wrapper.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/gradle_wrapper1.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/gradle_wrapper2.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Unix/BebopSample/BebopSample.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Unix/BebopSample/BebopSample.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Unix/BebopSample/atom.mk" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Unix/BebopSample/ihm.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Unix/BebopSample/ihm.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Unix/Dependencies/atom.mk" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Unix/JumpingSumoSample/JumpingSumoSample.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Unix/JumpingSumoSample/JumpingSumoSample.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Unix/JumpingSumoSample/atom.mk" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Unix/JumpingSumoSample/ihm.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Unix/JumpingSumoSample/ihm.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/iOS/SDKSample/SDKSample.xcodeproj/project.pbxproj" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/iOS/SDKSample/SDKSample.xcodeproj/xcshareddata/xcschemes/SDKSample.xcscheme" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/iOS/SDKSample/SDKSample.xcodeproj/xcshareddata/xcschemes/SDKSampleForSkyController2.xcscheme" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/iOS/SDKSample/SDKSample/AppDelegate.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/iOS/SDKSample/SDKSample/AppDelegate.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/iOS/SDKSample/SDKSample/Assets.xcassets/AppIcon.appiconset/Contents.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/iOS/SDKSample/SDKSample/Audio/AudioStreamAUBackend.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/iOS/SDKSample/SDKSample/Audio/AudioStreamAUBackend.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/iOS/SDKSample/SDKSample/Base.lproj/LaunchScreen.storyboard" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/iOS/SDKSample/SDKSample/Base.lproj/Main.storyboard" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/iOS/SDKSample/SDKSample/Discovery/DroneDiscoverer.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/iOS/SDKSample/SDKSample/Discovery/DroneDiscoverer.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/iOS/SDKSample/SDKSample/Drones/BebopDrone.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/iOS/SDKSample/SDKSample/Drones/BebopDrone.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/iOS/SDKSample/SDKSample/Drones/JSDrone.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/iOS/SDKSample/SDKSample/Drones/JSDrone.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/iOS/SDKSample/SDKSample/Drones/MiniDrone.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/iOS/SDKSample/SDKSample/Drones/MiniDrone.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/iOS/SDKSample/SDKSample/Drones/SDCardModule.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/iOS/SDKSample/SDKSample/Drones/SDCardModule.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/iOS/SDKSample/SDKSample/Drones/SkyController.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/iOS/SDKSample/SDKSample/Drones/SkyController.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/iOS/SDKSample/SDKSample/Drones/SkyController2.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/iOS/SDKSample/SDKSample/Drones/SkyController2.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/iOS/SDKSample/SDKSample/Drones/SwingDrone.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/iOS/SDKSample/SDKSample/Drones/SwingDrone.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/iOS/SDKSample/SDKSample/Info.plist" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/iOS/SDKSample/SDKSample/InfoForSkyController2.plist" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/iOS/SDKSample/SDKSample/ViewControllers/BebopVC.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/iOS/SDKSample/SDKSample/ViewControllers/BebopVC.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/iOS/SDKSample/SDKSample/ViewControllers/DeviceListVC.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/iOS/SDKSample/SDKSample/ViewControllers/DeviceListVC.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/iOS/SDKSample/SDKSample/ViewControllers/JSVC.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/iOS/SDKSample/SDKSample/ViewControllers/JSVC.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/iOS/SDKSample/SDKSample/ViewControllers/MiniDroneVC.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/iOS/SDKSample/SDKSample/ViewControllers/MiniDroneVC.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/iOS/SDKSample/SDKSample/ViewControllers/SkyController2VC.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/iOS/SDKSample/SDKSample/ViewControllers/SkyController2VC.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/iOS/SDKSample/SDKSample/ViewControllers/SkyControllerVC.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/iOS/SDKSample/SDKSample/ViewControllers/SkyControllerVC.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/iOS/SDKSample/SDKSample/ViewControllers/SwingDroneVC.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/iOS/SDKSample/SDKSample/ViewControllers/SwingDroneVC.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/iOS/SDKSample/SDKSample/Views/H264VideoView.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/iOS/SDKSample/SDKSample/Views/H264VideoView.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/iOS/SDKSample/SDKSample/Views/JSVideoView.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/iOS/SDKSample/SDKSample/Views/JSVideoView.m" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/iOS/SDKSample/SDKSample/main.m" beforeDir="false" />
+    </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="FUSProjectUsageTrigger">
-    <session id="-1311473512">
-      <usages-collector id="statistics.lifecycle.project">
-        <counts>
-          <entry key="project.closed" value="1" />
-          <entry key="project.open.time.7" value="1" />
-          <entry key="project.opened" value="1" />
-        </counts>
-      </usages-collector>
-    </session>
+  <component name="ExternalProjectsData">
+    <projectState path="$PROJECT_DIR$">
+      <ProjectState />
+    </projectState>
+  </component>
+  <component name="ExternalProjectsManager">
+    <system id="GRADLE">
+      <state>
+        <projects_view>
+          <tree_state>
+            <expand />
+            <select />
+          </tree_state>
+        </projects_view>
+      </state>
+    </system>
   </component>
   <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
-  <component name="ProjectFrameBounds">
-    <option name="x" value="951" />
-    <option name="y" value="-9" />
-    <option name="width" value="978" />
-    <option name="height" value="1048" />
-  </component>
+  <component name="ProjectId" id="1YzoQpaJ0xJ0mOvmasPsUKzP0QR" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
-  <component name="ProjectView">
-    <navigator currentView="ProjectPane" proportions="" version="1">
-      <foldersAlwaysOnTop value="true" />
-    </navigator>
-    <panes>
-      <pane id="PackagesPane" />
-      <pane id="ProjectPane">
-        <subPane>
-          <expand>
-            <path>
-              <item name="Samples" type="b2602c69:ProjectViewProjectNode" />
-              <item name="main" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="Samples" type="b2602c69:ProjectViewProjectNode" />
-              <item name="main" type="462c0819:PsiDirectoryNode" />
-              <item name="java" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="Samples" type="b2602c69:ProjectViewProjectNode" />
-              <item name="main" type="462c0819:PsiDirectoryNode" />
-              <item name="java" type="462c0819:PsiDirectoryNode" />
-              <item name="jumpingsumo" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="Samples" type="b2602c69:ProjectViewProjectNode" />
-              <item name="main" type="462c0819:PsiDirectoryNode" />
-              <item name="res" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="Samples" type="b2602c69:ProjectViewProjectNode" />
-              <item name="main" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="Samples" type="b2602c69:ProjectViewProjectNode" />
-              <item name="main" type="462c0819:PsiDirectoryNode" />
-              <item name="java" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="Samples" type="b2602c69:ProjectViewProjectNode" />
-              <item name="main" type="462c0819:PsiDirectoryNode" />
-              <item name="java" type="462c0819:PsiDirectoryNode" />
-              <item name="sdksample" type="462c0819:PsiDirectoryNode" />
-            </path>
-          </expand>
-          <select />
-        </subPane>
-      </pane>
-      <pane id="Scope" />
-    </panes>
-  </component>
   <component name="PropertiesComponent">
     <property name="android.sdk.path" value="$USER_HOME$/AppData/Local/Android/Sdk" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="project.structure.last.edited" value="SDKs" />
+    <property name="project.structure.proportion" value="0.15" />
+    <property name="project.structure.side.proportion" value="0.2" />
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -96,51 +131,39 @@
       </list>
     </option>
   </component>
+  <component name="RunManager">
+    <configuration default="true" type="AndroidJUnit" factoryName="Android JUnit">
+      <option name="TEST_OBJECT" value="class" />
+      <option name="WORKING_DIRECTORY" value="$MODULE_DIR$" />
+      <method v="2">
+        <option name="Android.Gradle.BeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+  </component>
   <component name="SvnConfiguration">
     <configuration />
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="90ec0f55-7085-4101-82a5-7c0b91c24b2f" name="Default Changelist" comment="" />
-      <created>1583291384187</created>
+      <changelist id="80c47459-9bf0-49c1-a421-b2ee6e8e8fed" name="Default Changelist" comment="" />
+      <created>1583954770554</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1583291384187</updated>
+      <updated>1583954770554</updated>
     </task>
     <servers />
   </component>
-  <component name="ToolWindowManager">
-    <frame x="-7" y="-7" width="1550" height="838" extended-state="6" />
-    <layout>
-      <window_info id="Favorites" side_tool="true" />
-      <window_info active="true" content_ui="combo" id="Project" visible="true" weight="0.32980832" />
-      <window_info id="Structure" side_tool="true" />
-      <window_info id="Designer" />
-      <window_info id="Captures" order="0" weight="0.25" />
-      <window_info anchor="bottom" id="Terminal" />
-      <window_info anchor="bottom" id="Event Log" side_tool="true" />
-      <window_info anchor="bottom" id="Version Control" show_stripe_button="false" />
-      <window_info anchor="bottom" id="TODO" />
-      <window_info anchor="right" id="Palette&#9;" />
-    </layout>
-  </component>
-  <component name="VcsContentAnnotationSettings">
-    <option name="myLimit" value="2678400000" />
-  </component>
-  <component name="masterDetails">
-    <states>
-      <state key="ProjectJDKs.UI">
-        <settings>
-          <last-edited>1.8</last-edited>
-          <splitter-proportions>
-            <option name="proportions">
-              <list>
-                <option value="0.2" />
-              </list>
-            </option>
-          </splitter-proportions>
-        </settings>
-      </state>
-    </states>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="COLUMN_ORDER" />
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
 </project>
