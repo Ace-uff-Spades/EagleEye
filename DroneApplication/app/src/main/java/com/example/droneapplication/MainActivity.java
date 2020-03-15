@@ -67,9 +67,12 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
 
     private ARCONTROLLER_DEVICE_STATE_ENUM mState;
 
-    TextView viewer;
+    private BluetoothController mBluetoothController;
 
-    Button findNetworks,connectDrone,takeOffBtn,landBtn;
+
+    TextView viewer,viewer2;
+
+    Button findNetworks,connectDrone,takeOffBtn,landBtn,connect,findDevice;
 
     ListView wifiViewer;
 
@@ -137,12 +140,16 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        mBluetoothController = new BluetoothController();
         findNetworks = findViewById(R.id.findNetworks);
         connectDrone = findViewById(R.id.connectBtn);
         wifiViewer = findViewById(R.id.wifiViewer);
         viewer = findViewById(R.id.viewer);
         takeOffBtn = findViewById(R.id.takeOffBtn);
         landBtn = findViewById(R.id.landBtn);
+        viewer2 = findViewById(R.id.viewer2);
+        connect = findViewById(R.id.connect);
+        findDevice=findViewById(R.id.findDevice);
         initDiscoveryService();
         ARSDK.loadSDKLibs();
         initDiscoveryService();
@@ -168,13 +175,32 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
             ArrayAdapter <String> adapter = new ArrayAdapter(this,layout.simple_list_item_1,deviceListString);
             wifiViewer.setAdapter(adapter);
             myDeviceService = deviceList.get(0);
-            viewer.setText(deviceList.get(0).toString());
+            viewer.setText("Found Device");
             // Do what you want with the device list
         }
     }
 
     private void implementListeners()
     {
+        findDevice.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                viewer2.setText("Finding Device");
+                if(mBluetoothController.findRaspberryPi())
+                    viewer2.setText("Found!");
+                else
+                    viewer2.setText("Not Found");
+            }
+        });
+        connect.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(mBluetoothController.connect())
+                    viewer2.setText("Connected!");
+                else
+                    viewer2.setText("Not Connected");
+            }
+        });
         findNetworks.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

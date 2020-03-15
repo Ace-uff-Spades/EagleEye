@@ -27,7 +27,6 @@ public class MainActivity extends AppCompatActivity {
     BluetoothAdapter bluetoothAdapter;
     BluetoothDevice btDevice;
     TextView status;
-    TextView msg_box;
     Button connect,sendMessage,findDevice;
     SendReceive sendReceive;
     EditText message;
@@ -50,7 +49,6 @@ public class MainActivity extends AppCompatActivity {
         connect = findViewById(R.id.connect);
         sendMessage = findViewById(R.id.sendMessage);
         findDevice=findViewById(R.id.findDevice);
-        msg_box=findViewById(R.id.msg_box);
         message = findViewById(R.id.message);
         //status.setText(bluetoothAdapter.getName());
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -69,9 +67,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Set<BluetoothDevice> bt = bluetoothAdapter.getBondedDevices();
-                String[] strings = new String[bt.size()];
-                int index = 0;
-
                 if(bt.size()>0)
                 {
                     status.setText("Finding Device");
@@ -123,7 +118,6 @@ public class MainActivity extends AppCompatActivity {
                 case STATE_MESSAGE_RECEIVED:
                     byte[] readBuff = (byte[]) msg.obj;
                     String tempMsg=new String(readBuff,0,msg.arg1);
-                    msg_box.setText(tempMsg);
                     break;
                 case 9:
                     status.setText("Creating Socket");
