@@ -1,23 +1,31 @@
 package com.example.droneapplication;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import android.R.layout;
+import android.annotation.SuppressLint;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.net.sip.SipSession;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.IBinder;
+import android.os.Message;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.os.Handler;
+
 
 import com.parrot.arsdk.ARSDK;
 import com.parrot.arsdk.arcommands.ARCOMMANDS_ARDRONE3_PILOTINGSTATE_FLYINGSTATECHANGED_STATE_ENUM;
@@ -34,17 +42,26 @@ import com.parrot.arsdk.arcontroller.ARDeviceControllerStreamListener;
 import com.parrot.arsdk.arcontroller.ARFeatureARDrone3;
 import com.parrot.arsdk.arcontroller.ARFeatureCommon;
 import com.parrot.arsdk.arcontroller.ARFrame;
+import com.parrot.arsdk.ardatatransfer.ARDATATRANSFER_ERROR_ENUM;
+import com.parrot.arsdk.ardatatransfer.ARDataTransferException;
+import com.parrot.arsdk.ardatatransfer.ARDataTransferManager;
+import com.parrot.arsdk.ardatatransfer.ARDataTransferMedia;
+import com.parrot.arsdk.ardatatransfer.ARDataTransferMediasDownloader;
 import com.parrot.arsdk.ardiscovery.ARDISCOVERY_PRODUCT_ENUM;
 import com.parrot.arsdk.ardiscovery.ARDiscoveryDevice;
 import com.parrot.arsdk.ardiscovery.ARDiscoveryDeviceNetService;
 import com.parrot.arsdk.ardiscovery.ARDiscoveryDeviceService;
 import com.parrot.arsdk.ardiscovery.ARDiscoveryException;
-import com.parrot.arsdk.ardiscovery.ARDiscoveryMux;
 import com.parrot.arsdk.ardiscovery.ARDiscoveryService;
 import com.parrot.arsdk.ardiscovery.receivers.ARDiscoveryServicesDevicesListUpdatedReceiver;
 import com.parrot.arsdk.ardiscovery.receivers.ARDiscoveryServicesDevicesListUpdatedReceiverDelegate;
+import com.parrot.arsdk.armedia.ARMediaObject;
 import com.parrot.arsdk.arsal.ARSALPrint;
+import com.parrot.arsdk.arutils.ARUtilsException;
+import com.parrot.arsdk.arutils.ARUtilsFtpConnection;
+import com.parrot.arsdk.arutils.ARUtilsManager;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements ARDiscoveryServicesDevicesListUpdatedReceiverDelegate, ARDeviceControllerStreamListener {
@@ -69,10 +86,31 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
 
     private BluetoothController mBluetoothController;
 
+    private static final int DEVICE_PORT = 21;
+
+    private static final String MEDIA_FOLDER = "internal_000";
+
+    private AsyncTask<Void, Float, ArrayList<ARMediaObject>> getMediaAsyncTask;
+
+    private Handler mFileTransferThreadHandler;
+
+    private HandlerThread mFileTransferThread;
+
+    private boolean isRunning = false;
+
+    private boolean isDownloading = false;
+
+    private final Object lock = new Object();
+
+    private ARDataTransferManager dataTransferManager;
+
+    private ARUtilsManager ftpListManager;
+
+    private ARUtilsManager ftpQueueManager;
 
     TextView viewer,viewer2;
 
-    Button findNetworks,connectDrone,takeOffBtn,landBtn,connect,findDevice;
+    Button findNetworks,connectDrone,takeOffBtn,landBtn,connect,findDevice,sendPic,takePic;
 
     ListView wifiViewer;
 
@@ -134,6 +172,7 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
         mARDiscoveryDevice=null;
         myDeviceService = null;
         mState = ARCONTROLLER_DEVICE_STATE_ENUM.ARCONTROLLER_DEVICE_STATE_STOPPED;
+        getMediaAsyncTask=null;
     }
 
     @Override
@@ -149,6 +188,8 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
         landBtn = findViewById(R.id.landBtn);
         viewer2 = findViewById(R.id.viewer2);
         connect = findViewById(R.id.connect);
+        sendPic = findViewById(R.id.sendPic);
+        takePic = findViewById(R.id.takePic);
         findDevice=findViewById(R.id.findDevice);
         initDiscoveryService();
         ARSDK.loadSDKLibs();
@@ -182,6 +223,20 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
 
     private void implementListeners()
     {
+        takePic.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mARDeviceController.getFeatureARDrone3().sendMediaRecordPicture((byte)0);
+            }
+        });
+        sendPic.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //mBluetoothController.writeToServer("hello".getBytes());
+                createDataTransferManager();
+                fetchMediasList();
+            }
+        });
         findDevice.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -240,6 +295,7 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
         closeServices();
         viewer.setText(mARDeviceController.toString());
         mARDeviceController.addListener((mDeviceControllerListener));
+        mARDeviceController.addStreamListener(this);
         if ((mARDeviceController != null) && (ARCONTROLLER_DEVICE_STATE_ENUM.ARCONTROLLER_DEVICE_STATE_STOPPED.equals(mState))) {
             ARCONTROLLER_ERROR_ENUM error = mARDeviceController.start();
             if(error!=ARCONTROLLER_ERROR_ENUM.ARCONTROLLER_OK)
@@ -252,6 +308,7 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
     public void onDestroy() {
         super.onDestroy();
         mARDeviceController.dispose();
+
         viewer.setText("Disoposed");
     }
 
@@ -413,16 +470,142 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
         return null;
     }
 
+    private void createDataTransferManager() {
+        String productIP = "192.168.42.1";  // TODO: get this address from libARController
 
+        ARDATATRANSFER_ERROR_ENUM result = ARDATATRANSFER_ERROR_ENUM.ARDATATRANSFER_OK;
+        try
+        {
+            dataTransferManager = new ARDataTransferManager();
+        }
+        catch (ARDataTransferException e)
+        {
+            e.printStackTrace();
+            result = ARDATATRANSFER_ERROR_ENUM.ARDATATRANSFER_ERROR;
+        }
+
+        if (result == ARDATATRANSFER_ERROR_ENUM.ARDATATRANSFER_OK)
+        {
+            try
+            {
+                ftpListManager = new ARUtilsManager();
+                ftpQueueManager = new ARUtilsManager();
+
+                ftpListManager.initWifiFtp(productIP, DEVICE_PORT, ARUtilsFtpConnection.FTP_ANONYMOUS, "");
+                ftpQueueManager.initWifiFtp(productIP, DEVICE_PORT, ARUtilsFtpConnection.FTP_ANONYMOUS, "");
+            }
+            catch (ARUtilsException e)
+            {
+                e.printStackTrace();
+                result = ARDATATRANSFER_ERROR_ENUM.ARDATATRANSFER_ERROR_FTP;
+            }
+        }
+        if (result == ARDATATRANSFER_ERROR_ENUM.ARDATATRANSFER_OK)
+        {
+            // direct to external directory
+            String externalDirectory = Environment.getExternalStorageDirectory().toString();
+            try
+            {
+                dataTransferManager.getARDataTransferMediasDownloader().createMediasDownloader(ftpListManager, ftpQueueManager, MEDIA_FOLDER, externalDirectory);
+            }
+            catch (ARDataTransferException e)
+            {
+                e.printStackTrace();
+                result = e.getError();
+            }
+        }
+
+        if (result == ARDATATRANSFER_ERROR_ENUM.ARDATATRANSFER_OK)
+        {
+            // create a thread for the download to run the download runnable
+            mFileTransferThread = new HandlerThread("FileTransferThread");
+            mFileTransferThread.start();
+            mFileTransferThreadHandler = new Handler(mFileTransferThread.getLooper());
+        }
+
+        if (result != ARDATATRANSFER_ERROR_ENUM.ARDATATRANSFER_OK)
+        {
+            // clean up here because an error happened
+        }
+    }
+
+
+    Handler handler = new Handler(new Handler.Callback() {
+
+        @Override
+        public boolean handleMessage(@NonNull Message message) {
+            switch (message.what) {
+                case 1:
+                    viewer.setText("Media is null");
+            }
+            return false;
+        }
+    });
+
+
+    @SuppressLint("StaticFieldLeak")
+    private void fetchMediasList() {
+        if (getMediaAsyncTask == null)
+        {
+            getMediaAsyncTask = new AsyncTask<Void, Float, ArrayList<ARMediaObject>>()
+            {
+                @Override
+                protected ArrayList<ARMediaObject> doInBackground(Void... params)
+                {
+                    ArrayList<ARMediaObject> mediaList = null;
+                    synchronized (lock)
+                    {
+                        ARDataTransferMediasDownloader mediasDownloader = null;
+                        if (dataTransferManager != null)
+                        {
+                            mediasDownloader = dataTransferManager.getARDataTransferMediasDownloader();
+                        }
+
+                        if (mediasDownloader != null) {
+                            try {
+                                int mediaListCount = mediasDownloader.getAvailableMediasSync(false);
+                                mediaList = new ArrayList<>(mediaListCount);
+                                for (int i = 0; i < mediaListCount; i++) {
+                                    ARDataTransferMedia currentMedia = mediasDownloader.getAvailableMediaAtIndex(i);
+                                    final ARMediaObject currentARMediaObject = new ARMediaObject();
+                                    currentARMediaObject.updateDataTransferMedia(getResources(), currentMedia);
+                                    mediaList.add(currentARMediaObject);
+                                }
+                            } catch (ARDataTransferException e) {
+                                e.printStackTrace();
+                                mediaList = null;
+                            }
+                        }
+
+                    }
+                    return mediaList;
+                }
+
+                @Override
+                protected void onPostExecute(ArrayList<ARMediaObject> arMediaObjects)
+                {
+                    if(arMediaObjects.size()!=0) {
+                        mBluetoothController.writeToServer(arMediaObjects.get(0).media.getThumbnail());
+                        viewer.setText("Send Picture");
+                    }
+                }
+            };
+        }
+
+        if (getMediaAsyncTask.getStatus() != AsyncTask.Status.RUNNING) {
+            getMediaAsyncTask.execute();
+        }
+    }
 
     @Override
     public ARCONTROLLER_ERROR_ENUM configureDecoder(ARDeviceController deviceController, ARControllerCodec codec) {
-        return null;
+
+        return ARCONTROLLER_ERROR_ENUM.ARCONTROLLER_OK;
     }
 
     @Override
     public ARCONTROLLER_ERROR_ENUM onFrameReceived(ARDeviceController deviceController, ARFrame frame) {
-        return null;
+        return ARCONTROLLER_ERROR_ENUM.ARCONTROLLER_OK;
     }
 
     @Override
