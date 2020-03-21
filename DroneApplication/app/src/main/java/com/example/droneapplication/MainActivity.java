@@ -28,7 +28,6 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.os.Handler;
 
 
 import com.parrot.arsdk.ARSDK;
@@ -75,7 +74,7 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements ARDiscoveryServicesDevicesListUpdatedReceiverDelegate, ARDeviceControllerStreamListener, ARDataTransferMediasDownloaderAvailableMediaListener,ARDataTransferMediasDownloaderCompletionListener, ARDataTransferMediasDownloaderProgressListener{
 
-    private static final String TAG = "DroneDiscoverer";
+    public static final String TAG = "DroneDiscoverer";
 
     private final Context mContext;
 
@@ -89,7 +88,7 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
 
     private ARDiscoveryDevice mARDiscoveryDevice;
 
-    private ARDeviceController mARDeviceController;
+    public static ARDeviceController mARDeviceController;
 
     private ARCONTROLLER_DEVICE_STATE_ENUM mState;
 
@@ -123,7 +122,7 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
 
     TextView viewer,viewer2;
 
-    Button findNetworks,connectDrone,takeOffBtn,landBtn,connect,findDevice,sendPic,takePic;
+    Button findNetworks,connectDrone,takeOffBtn,landBtn,connect,findDevice,sendPic,takePic, moveActivity;
 
     ListView wifiViewer;
 
@@ -206,7 +205,11 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
         sendPic = findViewById(R.id.sendPic);
         takePic = findViewById(R.id.takePic);
         findDevice=findViewById(R.id.findDevice);
+<<<<<<< HEAD
         imageView=findViewById(R.id.imageViewer);
+=======
+        moveActivity = findViewById(R.id.moveActivity);
+>>>>>>> 0b150413626164f442a8a4119191493c134fbd7c
         initDiscoveryService();
         ARSDK.loadSDKLibs();
         initDiscoveryService();
@@ -236,7 +239,7 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
         }
     }
 
-    private void implementListeners()
+    public void implementListeners()
     {
         takePic.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -296,6 +299,18 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
                 land();
             }
         });
+        moveActivity.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //moveRelativeLocation((String)xcord.getText(),(String)ycord.getText(),(String)zcord.getText(),(String)psicord.getText());
+                openMoveActivity();
+            }
+        });
+    }
+
+    public void openMoveActivity(){
+        Intent intent = new Intent(this, Move_Activity.class);
+        startActivity(intent);
     }
 
     public void createDeviceController(){
@@ -328,7 +343,7 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
         viewer.setText("Disoposed");
     }
 
-    private void initDiscoveryService()
+    public void initDiscoveryService()
     {
         // create the service connection
         if (mArdiscoveryServiceConnection == null)
@@ -364,7 +379,7 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
         }
     }
 
-    private void startDiscovery()
+    public void startDiscovery()
     {
         if (mArdiscoveryService != null)
         {
@@ -373,14 +388,14 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
     }
 
 
-    private void registerReceivers()
+    public void registerReceivers()
     {
         mArdiscoveryServicesDevicesListUpdatedReceiver = new ARDiscoveryServicesDevicesListUpdatedReceiver((ARDiscoveryServicesDevicesListUpdatedReceiverDelegate) this);
         LocalBroadcastManager localBroadcastMgr = LocalBroadcastManager.getInstance(getApplicationContext());
         localBroadcastMgr.registerReceiver(mArdiscoveryServicesDevicesListUpdatedReceiver, new IntentFilter(ARDiscoveryService.kARDiscoveryServiceNotificationServicesDevicesListUpdated));
     }
 
-    private void takeoff()
+    public void takeoff()
     {
         if (ARCOMMANDS_ARDRONE3_PILOTINGSTATE_FLYINGSTATECHANGED_STATE_ENUM.ARCOMMANDS_ARDRONE3_PILOTINGSTATE_FLYINGSTATECHANGED_STATE_LANDED.equals(getPilotingState()))
         {
@@ -393,22 +408,21 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
         }
     }
 
-    private void land()
+    public void land()
     {
         ARCOMMANDS_ARDRONE3_PILOTINGSTATE_FLYINGSTATECHANGED_STATE_ENUM flyingState = getPilotingState();
-        if (ARCOMMANDS_ARDRONE3_PILOTINGSTATE_FLYINGSTATECHANGED_STATE_ENUM.ARCOMMANDS_ARDRONE3_PILOTINGSTATE_FLYINGSTATECHANGED_STATE_HOVERING.equals(flyingState) ||
-                ARCOMMANDS_ARDRONE3_PILOTINGSTATE_FLYINGSTATECHANGED_STATE_ENUM.ARCOMMANDS_ARDRONE3_PILOTINGSTATE_FLYINGSTATECHANGED_STATE_HOVERING.equals(flyingState))
+        if (ARCOMMANDS_ARDRONE3_PILOTINGSTATE_FLYINGSTATECHANGED_STATE_ENUM.ARCOMMANDS_ARDRONE3_PILOTINGSTATE_FLYINGSTATECHANGED_STATE_HOVERING.equals(flyingState))
         {
             ARCONTROLLER_ERROR_ENUM error = mARDeviceController.getFeatureARDrone3().sendPilotingLanding();
 
             if (!error.equals(ARCONTROLLER_ERROR_ENUM.ARCONTROLLER_OK))
             {
-                ARSALPrint.e(TAG, "Error while sending take off: " + error);
+                ARSALPrint.e(TAG, "Error while landing: " + error);
             }
         }
     }
 
-    private ARDiscoveryDevice createDiscoveryDevice(ARDiscoveryDeviceService service)
+    public ARDiscoveryDevice createDiscoveryDevice(ARDiscoveryDeviceService service)
     {
         ARDiscoveryDevice device = null;
         if ((service != null)&&
@@ -432,14 +446,14 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
         return device;
     }
 
-    private void unregisterReceivers()
+    public void unregisterReceivers()
     {
         LocalBroadcastManager localBroadcastMgr = LocalBroadcastManager.getInstance(getApplicationContext());
 
         localBroadcastMgr.unregisterReceiver(mArdiscoveryServicesDevicesListUpdatedReceiver);
     }
 
-    private void closeServices()
+    public void closeServices()
     {
         Log.d(TAG, "closeServices ...");
 
@@ -458,7 +472,7 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
         }
     }
 
-    private ARCOMMANDS_ARDRONE3_PILOTINGSTATE_FLYINGSTATECHANGED_STATE_ENUM getPilotingState()
+    public ARCOMMANDS_ARDRONE3_PILOTINGSTATE_FLYINGSTATECHANGED_STATE_ENUM getPilotingState()
     {
         ARCOMMANDS_ARDRONE3_PILOTINGSTATE_FLYINGSTATECHANGED_STATE_ENUM flyingState = ARCOMMANDS_ARDRONE3_PILOTINGSTATE_FLYINGSTATECHANGED_STATE_ENUM.eARCOMMANDS_ARDRONE3_PILOTINGSTATE_FLYINGSTATECHANGED_STATE_UNKNOWN_ENUM_VALUE;
         if (mARDeviceController != null)
@@ -486,7 +500,7 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
         return null;
     }
 
-    private void createDataTransferManager() {
+    public void createDataTransferManager() {
         String productIP = "192.168.42.1";  // TODO: get this address from libARController
 
         ARDATATRANSFER_ERROR_ENUM result = ARDATATRANSFER_ERROR_ENUM.ARDATATRANSFER_OK;
