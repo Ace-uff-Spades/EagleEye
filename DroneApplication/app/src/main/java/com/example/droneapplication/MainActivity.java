@@ -205,11 +205,8 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
         sendPic = findViewById(R.id.sendPic);
         takePic = findViewById(R.id.takePic);
         findDevice=findViewById(R.id.findDevice);
-<<<<<<< HEAD
         imageView=findViewById(R.id.imageViewer);
-=======
-        moveActivity = findViewById(R.id.moveActivity);
->>>>>>> 0b150413626164f442a8a4119191493c134fbd7c
+        moveActivity = findViewById(R.id.move_activity);
         initDiscoveryService();
         ARSDK.loadSDKLibs();
         initDiscoveryService();
@@ -771,7 +768,9 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
     public void didMediaProgress(Object arg, ARDataTransferMedia media, float percent) {
 
     }
+
     private int potato;
+
     @Override
     public void didMediaAvailable(Object arg, final ARDataTransferMedia media, final int index) {
         viewer.setText(""+(potato++));
