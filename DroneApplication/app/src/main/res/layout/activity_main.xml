@@ -8,14 +8,14 @@
 
     <ListView
         android:id="@+id/wifiViewer"
-        android:layout_width="306dp"
-        android:layout_height="132dp"
+        android:layout_width="313dp"
+        android:layout_height="94dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.033"
+        app:layout_constraintHorizontal_bias="0.01"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.319" />
+        app:layout_constraintVertical_bias="0.302" />
 
     <Button
         android:id="@+id/findNetworks"
@@ -31,16 +31,16 @@
 
     <TextView
         android:id="@+id/viewer"
-        android:layout_width="129dp"
-        android:layout_height="21dp"
+        android:layout_width="312dp"
+        android:layout_height="14dp"
         android:text="status "
         android:textSize="12sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.315"
+        app:layout_constraintHorizontal_bias="0.009"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.191" />
+        app:layout_constraintVertical_bias="0.238" />
 
     <Button
         android:id="@+id/connectBtn"
@@ -119,14 +119,14 @@
 
     <ListView
         android:id="@+id/bluetoothViewer"
-        android:layout_width="307dp"
-        android:layout_height="226dp"
+        android:layout_width="304dp"
+        android:layout_height="70dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.026"
+        app:layout_constraintHorizontal_bias="0.037"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.664" />
+        app:layout_constraintVertical_bias="0.432" />
 
     <EditText
         android:id="@+id/editText"
@@ -179,5 +179,17 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.928" />
+
+    <ImageView
+        android:id="@+id/imageViewer"
+        android:layout_width="205dp"
+        android:layout_height="204dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.077"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.675"
+        app:srcCompat="@drawable/ic_launcher_background" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

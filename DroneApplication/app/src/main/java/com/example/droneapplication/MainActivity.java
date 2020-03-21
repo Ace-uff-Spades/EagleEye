@@ -11,6 +11,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
@@ -22,6 +25,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.os.Handler;
@@ -47,6 +51,9 @@ import com.parrot.arsdk.ardatatransfer.ARDataTransferException;
 import com.parrot.arsdk.ardatatransfer.ARDataTransferManager;
 import com.parrot.arsdk.ardatatransfer.ARDataTransferMedia;
 import com.parrot.arsdk.ardatatransfer.ARDataTransferMediasDownloader;
+import com.parrot.arsdk.ardatatransfer.ARDataTransferMediasDownloaderAvailableMediaListener;
+import com.parrot.arsdk.ardatatransfer.ARDataTransferMediasDownloaderCompletionListener;
+import com.parrot.arsdk.ardatatransfer.ARDataTransferMediasDownloaderProgressListener;
 import com.parrot.arsdk.ardiscovery.ARDISCOVERY_PRODUCT_ENUM;
 import com.parrot.arsdk.ardiscovery.ARDiscoveryDevice;
 import com.parrot.arsdk.ardiscovery.ARDiscoveryDeviceNetService;
@@ -61,10 +68,12 @@ import com.parrot.arsdk.arutils.ARUtilsException;
 import com.parrot.arsdk.arutils.ARUtilsFtpConnection;
 import com.parrot.arsdk.arutils.ARUtilsManager;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements ARDiscoveryServicesDevicesListUpdatedReceiverDelegate, ARDeviceControllerStreamListener {
+public class MainActivity extends AppCompatActivity implements ARDiscoveryServicesDevicesListUpdatedReceiverDelegate, ARDeviceControllerStreamListener, ARDataTransferMediasDownloaderAvailableMediaListener,ARDataTransferMediasDownloaderCompletionListener, ARDataTransferMediasDownloaderProgressListener{
 
     private static final String TAG = "DroneDiscoverer";
 
@@ -86,11 +95,15 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
 
     private BluetoothController mBluetoothController;
 
+    private ArrayAdapter<ARMediaObject> marMediaObjects;
+
     private static final int DEVICE_PORT = 21;
 
     private static final String MEDIA_FOLDER = "internal_000";
 
     private AsyncTask<Void, Float, ArrayList<ARMediaObject>> getMediaAsyncTask;
+
+    private AsyncTask<Void, Float, Void> getThumbnailAsyncTask;
 
     private Handler mFileTransferThreadHandler;
 
@@ -113,6 +126,8 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
     Button findNetworks,connectDrone,takeOffBtn,landBtn,connect,findDevice,sendPic,takePic;
 
     ListView wifiViewer;
+
+    ImageView imageView;
 
     private final ARDeviceControllerListener mDeviceControllerListener = new ARDeviceControllerListener() {
         @Override
@@ -191,13 +206,13 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
         sendPic = findViewById(R.id.sendPic);
         takePic = findViewById(R.id.takePic);
         findDevice=findViewById(R.id.findDevice);
+        imageView=findViewById(R.id.imageViewer);
         initDiscoveryService();
         ARSDK.loadSDKLibs();
         initDiscoveryService();
         registerReceivers();
         implementListeners();
     }
-
 
     public void onServicesDevicesListUpdated() {
         viewer.setText("got inside");
@@ -226,7 +241,7 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
         takePic.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mARDeviceController.getFeatureARDrone3().sendMediaRecordPicture((byte)0);
+                mARDeviceController.getFeatureARDrone3().sendMediaRecordPictureV2();
             }
         });
         sendPic.setOnClickListener(new View.OnClickListener() {
@@ -235,6 +250,7 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
                 //mBluetoothController.writeToServer("hello".getBytes());
                 createDataTransferManager();
                 fetchMediasList();
+                fetchThumbnails();
             }
         });
         findDevice.setOnClickListener(new View.OnClickListener() {
@@ -585,8 +601,16 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
                 protected void onPostExecute(ArrayList<ARMediaObject> arMediaObjects)
                 {
                     if(arMediaObjects.size()!=0) {
-                        mBluetoothController.writeToServer(arMediaObjects.get(0).media.getThumbnail());
-                        viewer.setText("Send Picture");
+                        //mBluetoothController.writeToServer(arMediaObjects.get(0).media.getThumbnail());
+                        String value = "Bytes: ";
+                        viewer.setText(""+arMediaObjects.size());
+                        for(int x=0;x<arMediaObjects.get(0).media.getThumbnail().length;x++)
+                        {
+                            viewer.setText("has length");
+                            value=value+(""+arMediaObjects.get(0).media.getThumbnail()[x]);
+                        }
+                        marMediaObjects = new ArrayAdapter<ARMediaObject>(getApplicationContext(),layout.simple_list_item_1,arMediaObjects);
+                        viewer.setText(arMediaObjects.size()+"");
                     }
                 }
             };
@@ -595,6 +619,116 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
         if (getMediaAsyncTask.getStatus() != AsyncTask.Status.RUNNING) {
             getMediaAsyncTask.execute();
         }
+    }
+
+    public ARMediaObject getMediaAtIndex(int index)
+    {
+        return marMediaObjects.getItem(index);
+    }
+
+    @SuppressLint("StaticFieldLeak")
+    private void fetchThumbnails() {
+        if (getThumbnailAsyncTask == null)
+        {
+            getThumbnailAsyncTask = new AsyncTask<Void, Float, Void>()
+            {
+                @Override
+                protected Void doInBackground(Void... params)
+                {
+                    synchronized (lock)
+                    {
+                        ARDataTransferMediasDownloader mediasDownloader = null;
+                        if (dataTransferManager != null)
+                        {
+                            mediasDownloader = dataTransferManager.getARDataTransferMediasDownloader();
+                        }
+
+                        if (mediasDownloader != null)
+                        {
+                            try
+                            {
+                                // availableMediaListener is a ARDataTransferMediasDownloaderAvailableMediaListener (you can pass YourActivity.this if YourActivity implements this interface)
+                                mediasDownloader.getAvailableMediasAsync(MainActivity.this, null);
+                            }
+                            catch (ARDataTransferException e)
+                            {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                    return null;
+                }
+
+                @Override
+                protected void onPostExecute(Void param)
+                {
+                    marMediaObjects.notifyDataSetChanged();
+                    //viewer.setText(marMediaObjects.getItem(0).thumbnail.draw());
+                    //imageView.setImageDrawable(marMediaObjects.getItem(0).thumbnail);
+                    Bitmap map = ((BitmapDrawable)marMediaObjects.getItem(0).thumbnail).getBitmap();
+                    imageView.setImageBitmap(map);
+
+                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                    map.compress(Bitmap.CompressFormat.PNG,40,stream);
+                    byte[] imageBytes = stream.toByteArray();
+                    //mBluetoothController.writeToServer(imageBytes);
+                    for(int x=0;x<imageBytes.length;x+=100)
+                    {
+                        mBluetoothController.writeToServer(Arrays.copyOfRange(imageBytes,x,Math.min(x+100,imageBytes.length)));
+                    }
+                }
+            };
+        }
+
+        if (getThumbnailAsyncTask.getStatus() != AsyncTask.Status.RUNNING) {
+            getThumbnailAsyncTask.execute();
+        }
+    }
+
+    private void downloadMedias(ArrayList<Integer> mediaToDl)
+    {
+        ARDataTransferMediasDownloader mediasDownloader = null;
+        if (dataTransferManager != null)
+        {
+            mediasDownloader = dataTransferManager.getARDataTransferMediasDownloader();
+        }
+
+        if (mediasDownloader != null)
+        {
+            for (int i = 0; i < mediaToDl.size(); i++)
+            {
+                int mediaIndex = mediaToDl.get(i);
+                ARDataTransferMedia mediaObject = null;
+                try
+                {
+                    mediaObject = dataTransferManager.getARDataTransferMediasDownloader().getAvailableMediaAtIndex(mediaIndex);
+                }
+                catch (ARDataTransferException e)
+                {
+                    e.printStackTrace();
+                }
+
+                if (mediaObject != null)
+                {
+                    try
+                    {
+                        mediasDownloader.addMediaToQueue(mediaObject, this, null, this, null);
+                    }
+                    catch (ARDataTransferException e)
+                    {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            if (!isRunning)
+            {
+                isRunning = true;
+                Runnable downloaderQueueRunnable = mediasDownloader.getDownloaderQueueRunnable();
+                mFileTransferThreadHandler.post(downloaderQueueRunnable);
+            }
+        }
+        isDownloading = true;
     }
 
     @Override
@@ -614,4 +748,31 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
     }
 
 
+    @Override
+    public void didMediaComplete(Object arg, ARDataTransferMedia media, ARDATATRANSFER_ERROR_ENUM error) {
+
+    }
+
+    @Override
+    public void didMediaProgress(Object arg, ARDataTransferMedia media, float percent) {
+
+    }
+    private int potato;
+    @Override
+    public void didMediaAvailable(Object arg, final ARDataTransferMedia media, final int index) {
+        viewer.setText(""+(potato++));
+        runOnUiThread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                ARMediaObject mediaObject = getMediaAtIndex(index);
+                if (mediaObject != null)
+                {
+                    mediaObject.updateThumbnailWithDataTransferMedia(getResources(), media);
+                    // after that, you can retrieve the thumbnail through mediaObject.getThumbnail()
+                }
+            }
+        });
+    }
 }
