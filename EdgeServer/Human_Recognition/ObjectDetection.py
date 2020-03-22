@@ -22,19 +22,6 @@ def get_exif(filename):
     	return "no GPS data"
     return exif
 
-#convert to human-readable GPS coordinates
-def get_coordinates(info):
-    for key in ['Latitude', 'Longitude']:
-        if 'GPS'+key in info and 'GPS'+key+'Ref' in info:
-            e = info['GPS'+key]
-            ref = info['GPS'+key+'Ref']
-            info[key] = ( str(e[0][0]/e[0][1]) + '°' +
-                          str(e[1][0]/e[1][1]) + '′' +
-                          str(e[2][0]/e[2][1]) + '″ ' +
-                          ref )
-    if 'Latitude' in info and 'Longitude' in info:
-        return [info['Latitude'], info['Longitude']]
-
 #convert to decimal GPS coordinates
 def get_decimal_coordinates(info):
     for key in ['Latitude', 'Longitude']:
@@ -61,10 +48,11 @@ custom = detector.CustomObjects(person=True)
 
 for filename in os.listdir(input_path):
 	if filename.endswith(".jpg"):
-		detections = detector.detectCustomObjectsFromImage(custom_objects=custom, input_image=os.path.join(input_path , filename), output_image_path=os.path.join(output_path , "new" + filename), minimum_percentage_probability=30)
+		detections = detector.detectCustomObjectsFromImage(custom_objects=custom, input_image=os.path.join(input_path , filename), output_image_path=os.path.join(output_path , "new" + filename), minimum_percentage_probability=50)
 		print(filename)
 		for eachObject in detections:
-			print(eachObject["name"] , " : " , eachObject["percentage_probability"])
+			x1, y1, x2, y2 = eachObject["box_points"]
+			print(eachObject["name"] , " : " , eachObject["percentage_probability"],  " : ", "("+str((x1+x2)*.5) + ", " + str(y2) +")")
 			if get_exif(os.path.join(input_path , filename)) != "no GPS data":
 				print(get_decimal_coordinates(get_exif(os.path.join(input_path , filename))['GPSInfo']))
 		continue
