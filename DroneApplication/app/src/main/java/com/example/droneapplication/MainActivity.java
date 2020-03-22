@@ -68,6 +68,7 @@ import com.parrot.arsdk.arutils.ARUtilsFtpConnection;
 import com.parrot.arsdk.arutils.ARUtilsManager;
 
 import java.io.ByteArrayOutputStream;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -119,6 +120,8 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
     private ARUtilsManager ftpListManager;
 
     private ARUtilsManager ftpQueueManager;
+
+    int adapterSize;
 
     TextView viewer,viewer2;
 
@@ -611,6 +614,7 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
                 @Override
                 protected void onPostExecute(ArrayList<ARMediaObject> arMediaObjects)
                 {
+                    adapterSize=arMediaObjects.size();
                     if(arMediaObjects.size()!=0) {
                         //mBluetoothController.writeToServer(arMediaObjects.get(0).media.getThumbnail());
                         String value = "Bytes: ";
@@ -674,18 +678,32 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
                 protected void onPostExecute(Void param)
                 {
                     marMediaObjects.notifyDataSetChanged();
-                    //viewer.setText(marMediaObjects.getItem(0).thumbnail.draw());
-                    //imageView.setImageDrawable(marMediaObjects.getItem(0).thumbnail);
-                    Bitmap map = ((BitmapDrawable)marMediaObjects.getItem(0).thumbnail).getBitmap();
-                    imageView.setImageBitmap(map);
-
-                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                    map.compress(Bitmap.CompressFormat.PNG,40,stream);
-                    byte[] imageBytes = stream.toByteArray();
-                    //mBluetoothController.writeToServer(imageBytes);
-                    for(int x=0;x<imageBytes.length;x+=100)
-                    {
-                        mBluetoothController.writeToServer(Arrays.copyOfRange(imageBytes,x,Math.min(x+100,imageBytes.length)));
+                    for(int y=0;y<adapterSize;y++) {
+                        Bitmap map = ((BitmapDrawable)marMediaObjects.getItem(y).thumbnail).getBitmap();
+                        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                        map.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                        byte[] imageBytes = stream.toByteArray();
+                        mBluetoothController.writeToServer((imageBytes.length + "").getBytes());
+                        try {
+                            Thread.sleep(150);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        for (int x = 0; x < imageBytes.length; x += 1000) {
+                            mBluetoothController.writeToServer(Arrays.copyOfRange(imageBytes, x, Math.min(x + 1000, imageBytes.length)));
+                            try {
+                                Thread.sleep(150);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        mBluetoothController.writeToServer("done".getBytes());
+                        try {
+                            Thread.sleep(150);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        viewer2.setText("send picture "+y);
                     }
                 }
             };
