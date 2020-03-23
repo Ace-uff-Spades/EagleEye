@@ -121,6 +121,8 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
 
     private ARUtilsManager ftpQueueManager;
 
+    private ArrayList<Integer> mediaToDownload;
+
     int adapterSize;
 
     TextView viewer,viewer2;
@@ -190,6 +192,7 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
         myDeviceService = null;
         mState = ARCONTROLLER_DEVICE_STATE_ENUM.ARCONTROLLER_DEVICE_STATE_STOPPED;
         getMediaAsyncTask=null;
+        mediaToDownload = new ArrayList<>();
     }
 
     @Override
@@ -239,6 +242,7 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
         }
     }
 
+    @SuppressLint("WrongThread")
     public void implementListeners()
     {
         takePic.setOnClickListener(new View.OnClickListener() {
@@ -250,10 +254,8 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
         sendPic.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //mBluetoothController.writeToServer("hello".getBytes());
                 createDataTransferManager();
                 fetchMediasList();
-                fetchThumbnails();
             }
         });
         findDevice.setOnClickListener(new View.OnClickListener() {
@@ -386,7 +388,6 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
             mArdiscoveryService.start();
         }
     }
-
 
     public void registerReceivers()
     {
@@ -616,16 +617,15 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
                 {
                     adapterSize=arMediaObjects.size();
                     if(arMediaObjects.size()!=0) {
-                        //mBluetoothController.writeToServer(arMediaObjects.get(0).media.getThumbnail());
-                        String value = "Bytes: ";
-                        viewer.setText(""+arMediaObjects.size());
-                        for(int x=0;x<arMediaObjects.get(0).media.getThumbnail().length;x++)
-                        {
-                            viewer.setText("has length");
-                            value=value+(""+arMediaObjects.get(0).media.getThumbnail()[x]);
-                        }
                         marMediaObjects = new ArrayAdapter<ARMediaObject>(getApplicationContext(),layout.simple_list_item_1,arMediaObjects);
-                        viewer.setText(arMediaObjects.size()+"");
+                    }
+                    for(int x=0;x<adapterSize;x++)
+                        mediaToDownload.add(x);
+                    viewer2.setText(mediaToDownload.size()+"");
+                    try {
+                        downloadMedias(mediaToDownload);
+                    } catch (ARDataTransferException e) {
+                        e.printStackTrace();
                     }
                 }
             };
@@ -634,6 +634,10 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
         if (getMediaAsyncTask.getStatus() != AsyncTask.Status.RUNNING) {
             getMediaAsyncTask.execute();
         }
+    }
+
+    public void addMediaToQueue() throws ARDataTransferException {
+        dataTransferManager.getARDataTransferMediasDownloader().addMediaToQueue(marMediaObjects.getItem(0).media,this,null,this,null);
     }
 
     public ARMediaObject getMediaAtIndex(int index)
@@ -674,6 +678,7 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
                     return null;
                 }
 
+                @SuppressLint("WrongThread")
                 @Override
                 protected void onPostExecute(Void param)
                 {
@@ -714,8 +719,8 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
         }
     }
 
-    private void downloadMedias(ArrayList<Integer> mediaToDl)
-    {
+    private void downloadMedias(ArrayList<Integer> mediaToDl) throws ARDataTransferException {
+        viewer.setText(mediaToDl.size()+"");
         ARDataTransferMediasDownloader mediasDownloader = null;
         if (dataTransferManager != null)
         {
@@ -784,7 +789,7 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
 
     @Override
     public void didMediaProgress(Object arg, ARDataTransferMedia media, float percent) {
-
+        viewer.setText("media is downloading");
     }
 
     private int potato;
