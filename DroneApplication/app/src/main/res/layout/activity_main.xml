@@ -8,14 +8,13 @@
 
         <ListView
             android:id="@+id/wifiViewer"
-            android:layout_width="306dp"
-            android:layout_height="132dp"
+            android:layout_width="311dp"
+            android:layout_height="64dp"
+            android:layout_marginTop="67dp"
+            android:layout_marginBottom="272dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.033"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.319" />
+            app:layout_constraintTop_toBottomOf="@+id/editText2" />
 
         <Button
             android:id="@+id/findNetworks"
@@ -24,23 +23,36 @@
             android:text="Find Drone Networks"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/findDevice"
-            app:layout_constraintHorizontal_bias="0.017"
+            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.008" />
+            app:layout_constraintVertical_bias="0.042" />
 
         <TextView
             android:id="@+id/viewer"
-            android:layout_width="129dp"
-            android:layout_height="21dp"
+            android:layout_width="68dp"
+            android:layout_height="23dp"
             android:text="status "
             android:textSize="12sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.315"
+            app:layout_constraintHorizontal_bias="0.344"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.191" />
+            app:layout_constraintVertical_bias="0.238" />
+
+        <TextView
+            android:id="@+id/viewer3"
+            android:layout_width="153dp"
+            android:layout_height="46dp"
+            android:text="status "
+            android:textSize="12sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.344"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.318" />
 
         <Button
             android:id="@+id/connectBtn"
@@ -49,10 +61,10 @@
             android:text="Connect Drone"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.015"
+            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.09" />
+            app:layout_constraintVertical_bias="0.136" />
 
         <Button
             android:id="@+id/takeOffBtn"
@@ -80,18 +92,31 @@
 
         <EditText
             android:id="@+id/editText2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="81dp"
+            android:layout_height="38dp"
             android:ems="10"
-            android:inputType="textPersonName"
             android:text="Drone Status:"
             android:textSize="12sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.015"
+            app:layout_constraintHorizontal_bias="0.017"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.184" />
+            app:layout_constraintVertical_bias="0.227" />
+
+        <EditText
+            android:id="@+id/editText3"
+            android:layout_width="81dp"
+            android:layout_height="38dp"
+            android:ems="10"
+            android:text="Drone Battery:"
+            android:textSize="12sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.017"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.298" />
 
         <Button
             android:id="@+id/connect"
@@ -100,10 +125,10 @@
             android:text="connect bluetooth"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.886"
+            app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.089" />
+            app:layout_constraintVertical_bias="0.136" />
 
         <Button
             android:id="@+id/findDevice"
@@ -112,36 +137,35 @@
             android:text="List Bluetooth Devices"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.976"
+            app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.007" />
+            app:layout_constraintVertical_bias="0.0" />
 
         <ListView
             android:id="@+id/bluetoothViewer"
-            android:layout_width="187dp"
-            android:layout_height="235dp"
+            android:layout_width="311dp"
+            android:layout_height="68dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.026"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.664" />
+            app:layout_constraintVertical_bias="0.581" />
 
         <EditText
             android:id="@+id/editText"
-            android:layout_width="198dp"
-            android:layout_height="39dp"
+            android:layout_width="81dp"
+            android:layout_height="38dp"
             android:ems="10"
             android:inputType="textPersonName"
-            android:text="Bluetooth Status:"
+            android:text="Bluetooth:"
             android:textSize="12sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.976"
+            app:layout_constraintHorizontal_bias="0.747"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.184" />
+            app:layout_constraintVertical_bias="0.226" />
 
         <TextView
             android:id="@+id/viewer2"
@@ -151,10 +175,10 @@
             android:textSize="12sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.93"
+            app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.19" />
+            app:layout_constraintVertical_bias="0.235" />
 
         <Button
             android:id="@+id/sendPic"
@@ -191,125 +215,5 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_bias="0.928" />
-
-        <TextView
-            android:id="@+id/Ycord"
-            android:layout_width="48dp"
-            android:layout_height="19dp"
-            android:layout_marginStart="12dp"
-            android:layout_marginLeft="12dp"
-            android:layout_marginTop="8dp"
-            android:text="Y value:"
-            app:layout_constraintStart_toEndOf="@+id/bluetoothViewer"
-            app:layout_constraintTop_toBottomOf="@+id/Xcord" />
-
-        <TextView
-            android:id="@+id/Psicord"
-            android:layout_width="59dp"
-            android:layout_height="19dp"
-            android:layout_marginStart="2dp"
-            android:layout_marginLeft="2dp"
-            android:layout_marginTop="11dp"
-            android:text="Psi value:"
-            app:layout_constraintStart_toEndOf="@+id/bluetoothViewer"
-            app:layout_constraintTop_toBottomOf="@+id/Zcord" />
-
-        <TextView
-            android:id="@+id/Zcord"
-            android:layout_width="48dp"
-            android:layout_height="19dp"
-            android:layout_marginStart="12dp"
-            android:layout_marginLeft="12dp"
-            android:layout_marginTop="12dp"
-            android:text="Z value:"
-            app:layout_constraintStart_toEndOf="@+id/bluetoothViewer"
-            app:layout_constraintTop_toBottomOf="@+id/Ycord" />
-
-        <TextView
-            android:id="@+id/Xcord"
-            android:layout_width="52dp"
-            android:layout_height="19dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginLeft="8dp"
-            android:layout_marginTop="173dp"
-            android:layout_marginBottom="11dp"
-            android:text="X value:"
-            app:layout_constraintBottom_toTopOf="@+id/Ycord"
-            app:layout_constraintStart_toEndOf="@+id/bluetoothViewer"
-            app:layout_constraintTop_toBottomOf="@+id/editText"
-            app:layout_constraintVertical_bias="0.0" />
-
-        <TextView
-            android:id="@+id/Yvalue"
-            android:layout_width="59dp"
-            android:layout_height="19dp"
-            android:layout_marginStart="10dp"
-            android:layout_marginLeft="10dp"
-            android:layout_marginTop="11dp"
-            android:layout_marginEnd="85dp"
-            android:layout_marginRight="85dp"
-            android:editable="true"
-            android:hint="Y coord"
-            android:text="TextView"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/Ycord"
-            app:layout_constraintTop_toBottomOf="@+id/Xvalue" />
-
-        <TextView
-            android:id="@+id/PsiValue"
-            android:layout_width="59dp"
-            android:layout_height="19dp"
-            android:layout_marginStart="12dp"
-            android:layout_marginLeft="12dp"
-            android:layout_marginTop="11dp"
-            android:layout_marginEnd="87dp"
-            android:layout_marginRight="87dp"
-            android:editable="true"
-            android:hint="Psi value"
-            android:text="TextView"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/Psicord"
-            app:layout_constraintTop_toBottomOf="@+id/Zvalue" />
-
-        <TextView
-            android:id="@+id/Zvalue"
-            android:layout_width="59dp"
-            android:layout_height="19dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="88dp"
-            android:layout_marginRight="88dp"
-            android:editable="true"
-            android:hint="Z coord"
-            android:text="TextView"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/Yvalue" />
-
-        <TextView
-            android:id="@+id/Xvalue"
-            android:layout_width="50dp"
-            android:layout_height="19dp"
-            android:layout_marginStart="11dp"
-            android:layout_marginLeft="11dp"
-            android:layout_marginTop="174dp"
-            android:layout_marginBottom="11dp"
-            android:editable="true"
-            android:hint="X coord"
-            app:layout_constraintBottom_toTopOf="@+id/Yvalue"
-            app:layout_constraintStart_toEndOf="@+id/Xcord"
-            app:layout_constraintTop_toBottomOf="@+id/editText" />
-
-        <TextView
-            android:id="@+id/moveConfirm"
-            android:layout_width="99dp"
-            android:layout_height="22dp"
-            android:layout_marginStart="20dp"
-            android:layout_marginLeft="20dp"
-            android:layout_marginTop="23dp"
-            android:layout_marginBottom="80dp"
-            android:text="Moving To.."
-            app:layout_constraintBottom_toTopOf="@+id/takeOffBtn"
-            app:layout_constraintStart_toEndOf="@+id/bluetoothViewer"
-            app:layout_constraintTop_toBottomOf="@+id/Psicord"
-            app:layout_constraintVertical_bias="1.0" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

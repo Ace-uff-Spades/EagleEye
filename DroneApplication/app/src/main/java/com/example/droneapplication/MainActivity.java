@@ -27,6 +27,8 @@ import android.widget.TextView;
 
 
 import com.parrot.arsdk.ARSDK;
+import com.parrot.arsdk.arcommands.ARCOMMANDS_ARDRONE3_PICTURESETTINGSSTATE_PICTUREFORMATCHANGED_TYPE_ENUM;
+import com.parrot.arsdk.arcommands.ARCOMMANDS_ARDRONE3_PILOTINGEVENT_MOVEBYEND_ERROR_ENUM;
 import com.parrot.arsdk.arcommands.ARCOMMANDS_ARDRONE3_PILOTINGSTATE_FLYINGSTATECHANGED_STATE_ENUM;
 import com.parrot.arsdk.arcontroller.ARCONTROLLER_DEVICE_STATE_ENUM;
 import com.parrot.arsdk.arcontroller.ARCONTROLLER_DICTIONARY_KEY_ENUM;
@@ -107,7 +109,9 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
 
     private ARUtilsManager ftpQueueManager;
 
-    TextView viewer,viewer2;
+    private int BatteryLevel;
+
+    TextView viewer,viewer2, viewer3;
 
     Button findNetworks,connectDrone,takeOffBtn,landBtn,connect,findDevice,sendPic,takePic, moveActivity;
 
@@ -146,6 +150,7 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
                     if (args != null) {
                         Integer batValue = (Integer) args.get(ARFeatureCommon.ARCONTROLLER_DICTIONARY_KEY_COMMON_COMMONSTATE_BATTERYSTATECHANGED_PERCENT);
                         // do what you want with the battery level
+                        BatteryLevel = batValue;
                     }
                 }
                 if (commandKey == ARCONTROLLER_DICTIONARY_KEY_ENUM.ARCONTROLLER_DICTIONARY_KEY_ARDRONE3_PILOTINGSTATE_FLYINGSTATECHANGED)
@@ -155,6 +160,23 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
                     {
                         Integer flyingStateInt = (Integer) args.get(ARFeatureARDrone3.ARCONTROLLER_DICTIONARY_KEY_ARDRONE3_PILOTINGSTATE_FLYINGSTATECHANGED_STATE);
                         ARCOMMANDS_ARDRONE3_PILOTINGSTATE_FLYINGSTATECHANGED_STATE_ENUM flyingState = ARCOMMANDS_ARDRONE3_PILOTINGSTATE_FLYINGSTATECHANGED_STATE_ENUM.getFromValue(flyingStateInt);
+                    }
+                }
+
+                if ((commandKey == ARCONTROLLER_DICTIONARY_KEY_ENUM.ARCONTROLLER_DICTIONARY_KEY_ARDRONE3_PILOTINGEVENT_MOVEBYEND) && (elementDictionary != null)){
+                    ARControllerArgumentDictionary<Object> args = elementDictionary.get(ARControllerDictionary.ARCONTROLLER_DICTIONARY_SINGLE_KEY);
+                    if (args != null) {
+                        float dX = (float)((Double)args.get(ARFeatureARDrone3.ARCONTROLLER_DICTIONARY_KEY_ARDRONE3_PILOTINGEVENT_MOVEBYEND_DX)).doubleValue();
+                        float dY = (float)((Double)args.get(ARFeatureARDrone3.ARCONTROLLER_DICTIONARY_KEY_ARDRONE3_PILOTINGEVENT_MOVEBYEND_DY)).doubleValue();
+                        float dZ = (float)((Double)args.get(ARFeatureARDrone3.ARCONTROLLER_DICTIONARY_KEY_ARDRONE3_PILOTINGEVENT_MOVEBYEND_DZ)).doubleValue();
+                        float dPsi = (float)((Double)args.get(ARFeatureARDrone3.ARCONTROLLER_DICTIONARY_KEY_ARDRONE3_PILOTINGEVENT_MOVEBYEND_DPSI)).doubleValue();
+                        ARCOMMANDS_ARDRONE3_PILOTINGEVENT_MOVEBYEND_ERROR_ENUM error = ARCOMMANDS_ARDRONE3_PILOTINGEVENT_MOVEBYEND_ERROR_ENUM.getFromValue((Integer)args.get(ARFeatureARDrone3.ARCONTROLLER_DICTIONARY_KEY_ARDRONE3_PILOTINGEVENT_MOVEBYEND_ERROR));
+                    }
+                }
+                if ((commandKey == ARCONTROLLER_DICTIONARY_KEY_ENUM.ARCONTROLLER_DICTIONARY_KEY_ARDRONE3_PICTURESETTINGSSTATE_PICTUREFORMATCHANGED) && (elementDictionary != null)){
+                    ARControllerArgumentDictionary<Object> args = elementDictionary.get(ARControllerDictionary.ARCONTROLLER_DICTIONARY_SINGLE_KEY);
+                    if (args != null) {
+                        ARCOMMANDS_ARDRONE3_PICTURESETTINGSSTATE_PICTUREFORMATCHANGED_TYPE_ENUM type = ARCOMMANDS_ARDRONE3_PICTURESETTINGSSTATE_PICTUREFORMATCHANGED_TYPE_ENUM.getFromValue((Integer)args.get(ARFeatureARDrone3.ARCONTROLLER_DICTIONARY_KEY_ARDRONE3_PICTURESETTINGSSTATE_PICTUREFORMATCHANGED_TYPE));
                     }
                 }
             }
@@ -172,6 +194,7 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
         myDeviceService = null;
         mState = ARCONTROLLER_DEVICE_STATE_ENUM.ARCONTROLLER_DEVICE_STATE_STOPPED;
         getMediaAsyncTask=null;
+        BatteryLevel = 0;
     }
 
     @Override
@@ -183,6 +206,7 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
         connectDrone = findViewById(R.id.connectBtn);
         wifiViewer = findViewById(R.id.wifiViewer);
         viewer = findViewById(R.id.viewer);
+        viewer3 = findViewById(R.id.viewer3);
         takeOffBtn = findViewById(R.id.takeOffBtn);
         landBtn = findViewById(R.id.landBtn);
         viewer2 = findViewById(R.id.viewer2);
@@ -226,6 +250,7 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
         takePic.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 mARDeviceController.getFeatureARDrone3().sendMediaRecordPicture((byte)0);
             }
         });
@@ -266,6 +291,7 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
             @Override
             public void onClick(View view) {
                 createDeviceController();
+                //viewer3.setText(BatteryLevel);
             }
         });
         takeOffBtn.setOnClickListener(new View.OnClickListener() {
