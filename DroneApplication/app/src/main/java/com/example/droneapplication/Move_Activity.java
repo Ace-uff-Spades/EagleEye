@@ -1,13 +1,16 @@
 package com.example.droneapplication;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.text.SpannableString;
+import android.text.method.ScrollingMovementMethod;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
+
 import com.parrot.arsdk.arcommands.ARCOMMANDS_ARDRONE3_PILOTINGSTATE_FLYINGSTATECHANGED_STATE_ENUM;
-import com.parrot.arsdk.arcommands.ARCOMMANDS_COMMON_FLIGHTPLANSTATE_COMPONENTSTATELISTCHANGED_COMPONENT_ENUM;
-import com.parrot.arsdk.arcommands.ARCOMMANDS_COMMON_MAVLINK_START_TYPE_ENUM;
-import com.parrot.arsdk.arcontroller.ARCONTROLLER_DEVICE_STATE_ENUM;
 import com.parrot.arsdk.arcontroller.ARCONTROLLER_DICTIONARY_KEY_ENUM;
 import com.parrot.arsdk.arcontroller.ARCONTROLLER_ERROR_ENUM;
 import com.parrot.arsdk.arcontroller.ARControllerArgumentDictionary;
@@ -18,60 +21,98 @@ import com.parrot.arsdk.arcontroller.ARFeatureARDrone3;
 import com.parrot.arsdk.arsal.ARSALPrint;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-
-import android.util.Log;
-import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
 
 public class Move_Activity extends AppCompatActivity {
+
+    private static final String TAG = "Move_Activity";
 
     EditText xcord, ycord, zcord, psicord;
 
     TextView displayConfirmation;
 
-    Button auto;
+    Button moveRelativeLoc, flightplanActivity;
 
-    Button moveRelativeLoc;
-    private ARDeviceController mARDeviceController = MainActivity.mARDeviceController;
+    Button moveForward, moveBackward, moveLeft, moveRight, moveUp, moveDown;
+
+    public static ARDeviceController mARDeviceController = MainActivity.mARDeviceController;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_move);
       //  Toolbar toolbar = findViewById(R.id.toolbar);
-        xcord = findViewById(R.id.xvalue);
-        ycord = findViewById(R.id.yvalue);
-        zcord = findViewById(R.id.zvalue);
-        psicord = findViewById(R.id.psivalue);
-        displayConfirmation = findViewById(R.id.displayCord);
 
-        moveRelativeLoc = findViewById(R.id.moveRelativeLoc);
+        displayConfirmation = findViewById(R.id.displayCord);
+        displayConfirmation.setMovementMethod(new ScrollingMovementMethod());
+
+        flightplanActivity = findViewById(R.id.flightplanActivity);
+        moveForward = findViewById(R.id.moveForward);
+        moveBackward = findViewById(R.id.movebackward);
+        moveRight = findViewById(R.id.moveRight);
+        moveLeft = findViewById(R.id.moveLeft);
+        moveUp = findViewById(R.id.moveUp);
+        moveDown = findViewById(R.id.moveDown);
+
+
+        flightplanActivity.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openMavlinkActivity();
+            }
+        });
+        moveForward.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                move("f");
+            }
+        });
+        moveBackward.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                move("b");
+            }
+        });
+        moveRight.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                move("r");
+            }
+        });
+        moveLeft.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                move("l");
+            }
+        });
+        moveUp.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                move("u");
+            }
+        });
+        moveDown.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                move("d");
+            }
+        });
+
+        /*
         moveRelativeLoc.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 moveRelativeLocation(xcord.getText().toString(),ycord.getText().toString(),zcord.getText().toString(),psicord.getText().toString());
             }
         });
-
-        auto = findViewById(R.id.automatic);
-        auto.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                activateFlightPlan();
-            }
-        });
+        */
     }
-
     private void moveRelativeLocation(String xc, String yc, String zc, String psic){
         double x = Double.parseDouble(xc);
         double y = Double.parseDouble(yc);
         double z = Double.parseDouble(zc);
         double psi = Double.parseDouble(psic)*(Math.PI/180.0);
         String confirmationText = "(" + x + "," + y + "," + z + "," + psi + ")";
-        displayConfirmation.setText(confirmationText);
+        addToLogs(confirmationText);
 
         ARCOMMANDS_ARDRONE3_PILOTINGSTATE_FLYINGSTATECHANGED_STATE_ENUM flyingState = getPilotingState();
         if (ARCOMMANDS_ARDRONE3_PILOTINGSTATE_FLYINGSTATECHANGED_STATE_ENUM.ARCOMMANDS_ARDRONE3_PILOTINGSTATE_FLYINGSTATECHANGED_STATE_HOVERING.equals(flyingState))
@@ -80,16 +121,40 @@ public class Move_Activity extends AppCompatActivity {
 
             if (!error.equals(ARCONTROLLER_ERROR_ENUM.ARCONTROLLER_OK))
             {
-                ARSALPrint.e(MainActivity.TAG, "Error while moving to location: " + error);
+                ARSALPrint.e(TAG, "Error while moving to location: " + error);
+                addToLogs("ERROR WHILE MOVING: " + error.toString());
             }
         }
     }
 
-    private void activateFlightPlan(){
-        Log.e(MainActivity.TAG, "Activating Flight Plan");
-        mARDeviceController.getFeatureCommon().sendMavlinkStart((String)"./Flightplan", (ARCOMMANDS_COMMON_MAVLINK_START_TYPE_ENUM) ARCOMMANDS_COMMON_MAVLINK_START_TYPE_ENUM.ARCOMMANDS_COMMON_MAVLINK_START_TYPE_FLIGHTPLAN);
+    public void move(String direction){
+        switch(direction) {
+            case ("f"):
+                moveRelativeLocation("1.0", "0.0", "0.0", "0.0");
+                addToLogs("Moving Forward");
+                break;
+            case ("b"):
+                moveRelativeLocation("-1.0", "0.0", "0.0", "0.0");
+                addToLogs("Moving Backward");
+                break;
+            case("l"):
+                moveRelativeLocation("0.0", "-1.0", "0.0", "0.0");
+                addToLogs("Moving Left");
+                break;
+            case("r"):
+                moveRelativeLocation("0.0", "1.0", "0.0", "0.0");
+                addToLogs("Moving Right");
+                break;
+            case("u"):
+                moveRelativeLocation("0.0", "0.0", "-1.0", "0.0");
+                addToLogs("Moving Up");
+                break;
+            case("d"):
+                moveRelativeLocation("0.0", "0.0", "1.0", "0.0");
+                addToLogs("Moving Down");
+                break;
+        }
     }
-
 
     public ARCOMMANDS_ARDRONE3_PILOTINGSTATE_FLYINGSTATECHANGED_STATE_ENUM getPilotingState()
     {
@@ -119,4 +184,16 @@ public class Move_Activity extends AppCompatActivity {
         return null;
     }
 
+    public void addToLogs(String newLog){
+        String oldLogs = displayConfirmation.getText().toString();
+        displayConfirmation.setText(new SpannableString(String.format("%s\n%s", oldLogs, newLog)));
+    }
+
+
+    public void openMavlinkActivity(){
+        Intent intent = new Intent(this, Mavlink_Activity.class);
+        startActivity(intent);
+    }
 }
+
+

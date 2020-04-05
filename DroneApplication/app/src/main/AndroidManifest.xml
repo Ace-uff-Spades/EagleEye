@@ -10,9 +10,12 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".Move_Activity"
+            android:name="com.example.droneapplication.Move_Activity"
             android:label="@string/title_activity_move_"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity android:name="com.example.droneapplication.Mavlink_Activity"
+            android:label="Mavlink_Activity"
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name="com.example.droneapplication.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

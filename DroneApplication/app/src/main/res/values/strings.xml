@@ -9,4 +9,17 @@
 
     <string name="hello_first_fragment">Hello first fragment</string>
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
+    <string name="mavlink_activity">Mavlink Activity</string>
+    <string name="calibrate">Calibrate</string>
+    <string name="calibrateButton">Calibrate:</string>
+    <string name="gps_fixed_text">GPS Fixed:</string>
+    <string name="gps_fixed">Waiting...</string>
+    <string name="mavlink_file_text">Mavlink File:</string>
+    <string name="calibrate_text">Waiting...</string>
+    <string name="mavlinkfile">Waiting...</string>
+    <string name="write_mavlink_file_text">WRITE MAVLINK FILE</string>
+    <string name="run_flightplan">RUN FLIGHTPLAN</string>
+    <string name="stop_flightplan">STOP FLIGHTPLAN</string>
+    <string name="log">Log:</string>
+    <string name="fix_gps_button">Fix GPS</string>
 </resources>
