@@ -2,45 +2,56 @@ package com.example.droneapplication;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
+import android.content.Context;
 import android.content.Intent;
-import android.os.Bundle;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.media.ExifInterface;
 import android.os.Handler;
-import android.os.Message;
 
+
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Set;
 import java.util.UUID;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-public class BluetoothController extends AppCompatActivity {
+public class BluetoothController extends AppCompatActivity{
 
     BluetoothAdapter bluetoothAdapter;
     BluetoothDevice btDevice;
     SendReceive sendReceive;
+    Handler mHandler;
+    public ArrayList<Bitmap> imageList;
+    public ArrayList<String> locationList;
+    public ExifInterface pictureExif;
     private BluetoothDevice device;
     private BluetoothSocket socket;
-    static final int STATE_LISTENING=1;
-    static final int STATE_CONNECTING=2;
-    static final int STATE_CONNECTED=3;
-    static final int STATE_CONNECTION_FAILED=4;
-    static final int STATE_MESSAGE_RECEIVED=5;
-    private static final String APP_NAME = "BTChat";
+    private Context mApplicationContext;
+    private final int CreateList = 0;
+    public boolean doneDownloading;
+    public boolean doneSending;
     private static final UUID MY_UUID = UUID.fromString("94f39d29-7d6d-437d-973b-fba39e49d4ee");
 
-    public BluetoothController()
+    public BluetoothController(Handler Handler2,Context mApplicationContext)
     {
+        doneDownloading = false;
+        doneSending = false;
+        imageList = new ArrayList<Bitmap>();
+        locationList = new ArrayList<String>();
+        this.mApplicationContext = mApplicationContext;
+        this.mHandler = Handler2;
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if(!bluetoothAdapter.isEnabled())
         {
             Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
         }
     }
-
 
     public boolean findRaspberryPi()
     {
@@ -63,46 +74,8 @@ public class BluetoothController extends AppCompatActivity {
         return true;
     }
 
-    /*
-    Handler handler = new Handler(new Handler.Callback() {
-        @Override
-        public boolean handleMessage(Message msg) {
-            switch(msg.what)
-            {
-                case STATE_LISTENING:
-                    viewer2.setText("Listening");
-                    break;
-                case STATE_CONNECTING:
-                    viewer2.setText("Connecting");
-                    break;
-                case STATE_CONNECTED:
-                    viewer2.setText("Connected");
-                    break;
-                case STATE_CONNECTION_FAILED:
-                    viewer2.setText("Connection Failed");
-                    break;
-                case STATE_MESSAGE_RECEIVED:
-                    byte[] readBuff = (byte[]) msg.obj;
-                    String tempMsg=new String(readBuff,0,msg.arg1);
-                    break;
-                case 9:
-                    viewer2.setText("Creating Socket");
-                    break;
-                case 10:
-                    viewer2.setText("Socket Created!");
-                    break;
-                case 11:
-                    viewer2.setText("Runable Begins");
-                    break;
-            }
-            return false;
-        }
-    });
-    */
 
-
-    public void writeToServer(byte[]bytes)
-    {
+    public void writeToServer(byte[]bytes) throws IOException {
         sendReceive.write(bytes);
     }
 
@@ -112,15 +85,8 @@ public class BluetoothController extends AppCompatActivity {
         {
             device = device1;
             try {
-                Message message=Message.obtain();
-                message.what = 9;
-                //handler.sendMessage(message);
 
                 socket = device.createRfcommSocketToServiceRecord(MY_UUID);
-
-                message=Message.obtain();
-                message.what = 10;
-                //handler.sendMessage(message);
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -130,16 +96,10 @@ public class BluetoothController extends AppCompatActivity {
         {
             try {
                 socket.connect();
-                Message message=Message.obtain();
-                message.what = STATE_CONNECTED;
-                //handler.sendMessage(message);
                 sendReceive=new SendReceive(socket);
                 sendReceive.start();
             } catch (IOException e) {
                 e.printStackTrace();
-                Message message=Message.obtain();
-                message.what = STATE_CONNECTION_FAILED;
-                //handler.sendMessage(message);
             }
         }
     }
@@ -170,30 +130,59 @@ public class BluetoothController extends AppCompatActivity {
             outputStream=tempOut;
         }
 
-        public void run()
-        {
-            byte[] buffer = new byte[1024];
-            int bytes;
 
+        public void run() {
             while(true) {
+                String value = "";
                 try {
-                    bytes = inputStream.read(buffer);
-                    //handler.obtainMessage(STATE_MESSAGE_RECEIVED, bytes, -1, buffer).sendToTarget();
-
+                    value = read();
                 } catch (IOException e) {
                     e.printStackTrace();
+                }
+                if (value.equals("done")) {
+                    doneDownloading=true;
+                    doneSending=false;
+                }
+                else if(value.equals("ok"))
+                {
+                    doneSending=true;
+                }
+                else if(value.equals("listView"))
+                {
+                     mHandler.obtainMessage(CreateList).sendToTarget();
+                }
+                else    
+                {
+                    File externalDirectory = mApplicationContext.getExternalFilesDir(null);
+                    File [] folderFiles= externalDirectory.listFiles();
+                    int index = Integer.parseInt(value);
+                    Bitmap mbitmap = BitmapFactory.decodeFile(folderFiles[index].getAbsolutePath());
+                    imageList.add(mbitmap);
+
+                    try {
+                        pictureExif = new ExifInterface(folderFiles[index].getAbsolutePath());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    float[] latLong = new float[2];
+                    pictureExif.getLatLong(latLong);
+                    String location = "(Lat: "+latLong[0]+", Long: "+latLong[1]+")";
+                    locationList.add(location);
                 }
             }
         }
 
-        public void write(byte[]bytes)
-        {
-            try {
-                outputStream.write(bytes);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        public String read() throws IOException {
+            byte[]buffer = new byte[1024];
+            int bytes = inputStream.read(buffer);
+            String s = new String (buffer,"ASCII");
+            s = s.substring(0,bytes);
+            return s;
+        }
 
+
+        public void write(byte[]bytes) throws IOException {
+            outputStream.write(bytes);
         }
     }
 }

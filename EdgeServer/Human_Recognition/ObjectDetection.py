@@ -4,38 +4,9 @@ from PIL import Image
 from PIL.ExifTags import TAGS, GPSTAGS
 
 import os
+import json
 
-#GPS getting GPS coodinates from image
-def get_exif(filename):
-    exif = Image.open(filename)._getexif()
-
-    if exif is not None:
-        for key, value in exif.items():
-            name = TAGS.get(key, key)
-            exif[name] = exif.pop(key)
-
-        if 'GPSInfo' in exif:
-            for key in exif['GPSInfo'].keys():
-                name = GPSTAGS.get(key,key)
-                exif['GPSInfo'][name] = exif['GPSInfo'].pop(key)
-    else:
-    	return "no GPS data"
-    return exif
-
-#convert to decimal GPS coordinates
-def get_decimal_coordinates(info):
-    for key in ['Latitude', 'Longitude']:
-        if 'GPS'+key in info and 'GPS'+key+'Ref' in info:
-            e = info['GPS'+key]
-            ref = info['GPS'+key+'Ref']
-            info[key] = ( e[0][0]/e[0][1] +
-                          e[1][0]/e[1][1] / 60 +
-                          e[2][0]/e[2][1] / 3600
-                        ) * (-1 if ref in ['S','W'] else 1)
-
-    if 'Latitude' in info and 'Longitude' in info:
-        return [info['Latitude'], info['Longitude']]
-
+#model initialization
 model_path = os.getcwd()
 input_path = os.path.join(model_path, "input")
 output_path = os.path.join(model_path, "output")
@@ -46,15 +17,39 @@ detector.setModelPath( os.path.join(model_path , "resnet50_coco_best_v2.0.1.h5")
 detector.loadModel()
 custom = detector.CustomObjects(person=True)
 
+#output initialization
+i=-1
+output = set()
+pixel_coordinates = {}
+
+#Iterate through the files in input and search for humans
 for filename in os.listdir(input_path):
-	if filename.endswith(".jpg"):
-		detections = detector.detectCustomObjectsFromImage(custom_objects=custom, input_image=os.path.join(input_path , filename), output_image_path=os.path.join(output_path , "new" + filename), minimum_percentage_probability=50)
-		print(filename)
-		for eachObject in detections:
-			x1, y1, x2, y2 = eachObject["box_points"]
-			print(eachObject["name"] , " : " , eachObject["percentage_probability"],  " : ", "("+str((x1+x2)*.5) + ", " + str(y2) +")")
-			if get_exif(os.path.join(input_path , filename)) != "no GPS data":
-				print(get_decimal_coordinates(get_exif(os.path.join(input_path , filename))['GPSInfo']))
-		continue
-	else:
-		continue
+    if filename.endswith(".jpg"):
+        detections = detector.detectCustomObjectsFromImage(custom_objects=custom, input_image=os.path.join(input_path , filename), output_image_path=os.path.join(output_path , "new" + filename), minimum_percentage_probability=50)
+        i=i+1
+        #if a human is detected, determine the pixel coordinate of their location and output true
+        for eachObject in detections:
+            x1, y1, x2, y2 = eachObject["box_points"]
+            midpoint = "("+str((x1+x2)*.5) + ", " + str(y2)+")"
+            #print(eachObject["name"] , " : " , eachObject["percentage_probability"],  " : ", midpoint)
+            #if get_geotagging(get_exif(os.path.join(input_path, filename))) != "no GPS data":
+                #print(get_coordinates(get_geotagging(get_exif(os.path.join(input_path, filename)))))
+            output.add(i)
+            pixel_coordinates.setdefault(i, [])
+            pixel_coordinates[i].append(midpoint)
+        continue
+        continue
+    else:
+        continue
+
+print(output, file=open("output/output.txt","w"))
+#print(pixel_coordinates, file=open("output/pixel_coordinates.txt", "w"))
+#save booleans and pixel coordinates to json files
+#with open('output/output.json', 'w') as fp:
+#   json.dump(output, fp)
+with open('output/pixel_coordinates.json', 'w') as fp:
+    json.dump(pixel_coordinates, fp)
+
+
+
+
