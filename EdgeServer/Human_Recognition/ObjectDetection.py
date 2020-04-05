@@ -5,36 +5,44 @@ from PIL.ExifTags import TAGS, GPSTAGS
 
 import os
 
-#GPS getting GPS coodinates from image
 def get_exif(filename):
-    exif = Image.open(filename)._getexif()
+    image = Image.open(filename)
+    image.verify()
+    return image._getexif()
 
-    if exif is not None:
-        for key, value in exif.items():
-            name = TAGS.get(key, key)
-            exif[name] = exif.pop(key)
+def get_geotagging(exif):
+    if not exif:
+        return "no GPS data"
+    geotagging = {}
+    for (idx, tag) in TAGS.items():
+        if tag == 'GPSInfo':
+            if idx not in exif:
+                return "no GPS data"
 
-        if 'GPSInfo' in exif:
-            for key in exif['GPSInfo'].keys():
-                name = GPSTAGS.get(key,key)
-                exif['GPSInfo'][name] = exif['GPSInfo'].pop(key)
-    else:
-    	return "no GPS data"
-    return exif
+            for (key, val) in GPSTAGS.items():
+                if key in exif[idx]:
+                    geotagging[val] = exif[idx][key]
 
-#convert to decimal GPS coordinates
-def get_decimal_coordinates(info):
-    for key in ['Latitude', 'Longitude']:
-        if 'GPS'+key in info and 'GPS'+key+'Ref' in info:
-            e = info['GPS'+key]
-            ref = info['GPS'+key+'Ref']
-            info[key] = ( e[0][0]/e[0][1] +
-                          e[1][0]/e[1][1] / 60 +
-                          e[2][0]/e[2][1] / 3600
-                        ) * (-1 if ref in ['S','W'] else 1)
+    return geotagging
 
-    if 'Latitude' in info and 'Longitude' in info:
-        return [info['Latitude'], info['Longitude']]
+def get_decimal_from_dms(dms, ref):
+
+    degrees = dms[0][0] / dms[0][1]
+    minutes = dms[1][0] / dms[1][1] / 60.0
+    seconds = dms[2][0] / dms[2][1] / 3600.0
+
+    if ref in ['S', 'W']:
+        degrees = -degrees
+        minutes = -minutes
+        seconds = -seconds
+
+    return round(degrees + minutes + seconds, 5)
+
+def get_coordinates(geotags):
+    lat = get_decimal_from_dms(geotags['GPSLatitude'], geotags['GPSLatitudeRef'])
+    lon = get_decimal_from_dms(geotags['GPSLongitude'], geotags['GPSLongitudeRef'])
+    return (lat,lon)
+
 
 model_path = os.getcwd()
 input_path = os.path.join(model_path, "input")
@@ -53,8 +61,8 @@ for filename in os.listdir(input_path):
 		for eachObject in detections:
 			x1, y1, x2, y2 = eachObject["box_points"]
 			print(eachObject["name"] , " : " , eachObject["percentage_probability"],  " : ", "("+str((x1+x2)*.5) + ", " + str(y2) +")")
-			if get_exif(os.path.join(input_path , filename)) != "no GPS data":
-				print(get_decimal_coordinates(get_exif(os.path.join(input_path , filename))['GPSInfo']))
+			if get_geotagging(get_exif(os.path.join(input_path, filename))) != "no GPS data": print(get_coordinates(get_geotagging(get_exif(os.path.join(input_path, filename)))))
+
 		continue
 	else:
 		continue
