@@ -41,6 +41,7 @@ import com.parrot.arsdk.armavlink.ARMavlinkException;
 import com.parrot.arsdk.armavlink.ARMavlinkFileGenerator;
 import com.parrot.arsdk.armavlink.ARMavlinkMissionItem;
 import com.parrot.arsdk.armavlink.MAV_ROI;
+import com.parrot.arsdk.armavlink.MAV_VIEW_MODE_TYPE;
 import com.parrot.arsdk.arutils.ARUTILS_ERROR_ENUM;
 import com.parrot.arsdk.arutils.ARUtilsManager;
 
@@ -353,34 +354,29 @@ public class Mavlink_Activity extends AppCompatActivity {
 
         List<Float> position = getDronePosition();
 
-        //Create Commands
-        ARMavlinkMissionItem takeoff = ARMavlinkMissionItem.CreateMavlinkTakeoffMissionItem(position.get(0),position.get(1), 8,0, 0);
-        ARMavlinkMissionItem videostart = ARMavlinkMissionItem.CreateMavlinkVideoStartCaptureMissionItem(0, 10, 700);
-        ARMavlinkMissionItem wait = ARMavlinkMissionItem.CreateMavlinkDelay(10);
-        ARMavlinkMissionItem navPoint1 = ARMavlinkMissionItem.CreateMavlinkNavWaypointMissionItem((float)40.344976, (float)-74.561673, 8, 0);
-        ARMavlinkMissionItem roi1 = ARMavlinkMissionItem.CreateMavlinkSetROI(MAV_ROI.MAV_ROI_WPNEXT,0,0,0,0,0);
-        ARMavlinkMissionItem navPoint2 = ARMavlinkMissionItem.CreateMavlinkNavWaypointMissionItem((float)40.345069, (float)-74.561172, 8, 0);
-        ARMavlinkMissionItem roi2 = ARMavlinkMissionItem.CreateMavlinkSetROI(MAV_ROI.MAV_ROI_WPNEXT,0,0,0,0,0);
-        ARMavlinkMissionItem navPoint3 = ARMavlinkMissionItem.CreateMavlinkNavWaypointMissionItem((float)40.344832, (float)-74.561074, 8, 0);
-        ARMavlinkMissionItem roi3 = ARMavlinkMissionItem.CreateMavlinkSetROI(MAV_ROI.MAV_ROI_WPNEXT,0,0,0,0,0);
-        ARMavlinkMissionItem navPoint4 = ARMavlinkMissionItem.CreateMavlinkNavWaypointMissionItem((float)40.344829, (float)-74.561604, 8, 0);
-        ARMavlinkMissionItem land = ARMavlinkMissionItem.CreateMavlinkLandMissionItem(position.get(0),position.get(1),5,0);
-        ARMavlinkMissionItem videostop = ARMavlinkMissionItem.CreateMavlinkVideoStopCaptureMissionItem();
+        ARMavlinkMissionItem takeoff = ARMavlinkMissionItem.CreateMavlinkTakeoffMissionItem(position.get(0),position.get(1), 0,0, 0);
+        ARMavlinkMissionItem initialAltitude = ARMavlinkMissionItem.CreateMavlinkNavWaypointMissionItem(position.get(0),position.get(1), 5, 0);
+        ARMavlinkMissionItem setView = ARMavlinkMissionItem.CreateMavlinkSetViewMode(MAV_VIEW_MODE_TYPE.VIEW_MODE_TYPE_ROI,0);
+        ARMavlinkMissionItem roi = ARMavlinkMissionItem.CreateMavlinkSetROI(MAV_ROI.MAV_ROI_WPNEXT,0,0,0,0,0);
+        ARMavlinkMissionItem navPoint1 = ARMavlinkMissionItem.CreateMavlinkNavWaypointMissionItem((float)40.344976, (float)-74.561673, 5, 0);
+        ARMavlinkMissionItem navPoint2 = ARMavlinkMissionItem.CreateMavlinkNavWaypointMissionItem((float)40.345042, (float)-74.561412, 5, 0);
+        ARMavlinkMissionItem navPoint3 = ARMavlinkMissionItem.CreateMavlinkNavWaypointMissionItem((float)40.344894, (float)-74.561315, 5, 0);
+        ARMavlinkMissionItem navPoint4 = ARMavlinkMissionItem.CreateMavlinkNavWaypointMissionItem((float)40.344837, (float)-74.561576, 5, 0);
+        ARMavlinkMissionItem land = ARMavlinkMissionItem.CreateMavlinkLandMissionItem(position.get(0),position.get(1),0,0);
 
-        //Adding commands to list
+//Adding commands to list
         MavController.addMissionItem(takeoff);
-        MavController.addMissionItem(wait);
-        MavController.addMissionItem(videostart);
+        MavController.addMissionItem(initialAltitude);
+        //MavController.addMissionItem(setView);
+        MavController.addMissionItem(roi);
         MavController.addMissionItem(navPoint1);
-        MavController.addMissionItem(roi1);
-        MavController.addMissionItem(navPoint2);
-        MavController.addMissionItem(roi2);
-        MavController.addMissionItem(navPoint3);
-        MavController.addMissionItem(roi3);
+        //MavController.addMissionItem(navPoint2);
+       // MavController.addMissionItem(navPoint3);
         MavController.addMissionItem(navPoint4);
         MavController.addMissionItem(land);
 
-        //MavController.addMissionItem(videostop);
+
+
 
 
         // save our mavlink file on android phone's directory
@@ -485,24 +481,29 @@ public class Mavlink_Activity extends AppCompatActivity {
         List<ARCONTROLLER_DICTIONARY_KEY_ENUM> list = new ArrayList<ARCONTROLLER_DICTIONARY_KEY_ENUM>();
 
         //First check if the mavlink file is running
-        list.add(ARCONTROLLER_DICTIONARY_KEY_ENUM.ARCONTROLLER_DICTIONARY_KEY_ARDRONE3_PILOTINGSTATE_POSITIONCHANGED);
+        list.add(ARCONTROLLER_DICTIONARY_KEY_ENUM.ARCONTROLLER_DICTIONARY_KEY_COMMON_MAVLINKSTATE_MAVLINKFILEPLAYINGSTATECHANGED);
         int mavlinkFileRunning = MavlinkFileController(list);
         if(mavlinkFileRunning == 0){
             //If Mavlink File is running then try to stop it
             ARCONTROLLER_ERROR_ENUM er = mARDeviceController.getFeatureCommon().sendMavlinkStop();
-            Log.e(TAG, "STOPPING MAVLINK FILE: " + er.toString());
+            //mARDeviceController.getFeatureARDrone3().sendPilotingEmergency();
+            Log.e(TAG, "Stopping Mavlink File: " + er.toString());
+            //addToLogs("CUT OUT MOTORS!!");
 
             //check if you stopped the mavlink file
             mavlinkFileRunning = MavlinkFileController(list);
             if(mavlinkFileRunning == 1){
                 Log.e(TAG, "SUCESSFULLY STOPPED MAVLINK FILE");
+                addToLogs("SUCESSFULLY STOPPED MAVLINK FILE");
             }
         }
         else if(mavlinkFileRunning == 2){
             Log.e(TAG, "MAVLINK FILE IS PAUSED");
+            addToLogs("MAVLINK FILE IS PAUSED");
         }
         else if(mavlinkFileRunning == 3){
             Log.e(TAG, "MAVLINK FILE IS LOADED AND READY TO EXECUTE");
+            addToLogs("MAVLINK FILE IS LOADED AND READY TO EXECUTE");
         }
         else if(mavlinkFileRunning == Integer.MIN_VALUE){
             Log.e(TAG, "TRIED TO STOP MAVLINK FILE BUT MAVLINK FILE NOT RUNNING");

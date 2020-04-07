@@ -38,23 +38,23 @@
         android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.768"
+        app:layout_constraintHorizontal_bias="0.778"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.628" />
+        app:layout_constraintVertical_bias="0.544" />
 
     <TextView
         android:id="@+id/textView12"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="98dp"
+        android:layout_height="20dp"
         android:layout_marginStart="184dp"
         android:layout_marginEnd="18dp"
-        android:layout_marginBottom="204dp"
+        android:layout_marginBottom="224dp"
         android:text="@string/mavlink_file_text"
         android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/mavlinkFile"
-        app:layout_constraintHorizontal_bias="0.653"
+        app:layout_constraintHorizontal_bias="0.421"
         app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
@@ -62,15 +62,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="18dp"
-        android:layout_marginBottom="4dp"
         android:text="@string/calibrateButton"
         android:textSize="18sp"
-        app:layout_constraintBottom_toTopOf="@+id/textView9"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.735"
+        app:layout_constraintHorizontal_bias="0.743"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/log"
-        app:layout_constraintVertical_bias="0.954" />
+        app:layout_constraintVertical_bias="0.179" />
 
     <TextView
         android:id="@+id/gpsFixedCheck"
@@ -83,14 +82,14 @@
         app:layout_constraintBottom_toTopOf="@+id/mavlinkFile"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/log"
-        app:layout_constraintVertical_bias="1.0" />
+        app:layout_constraintVertical_bias="0.888" />
 
     <TextView
         android:id="@+id/mavlinkFile"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="208dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="224dp"
         android:text="@string/mavlinkfile"
         android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -100,14 +99,15 @@
         android:id="@+id/calibrateCheck"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="44dp"
-        android:layout_marginEnd="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="20dp"
         android:layout_marginBottom="8dp"
         android:text="@string/calibrate_text"
         android:textSize="14sp"
         app:layout_constraintBottom_toTopOf="@+id/gpsFixedCheck"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/log" />
+        app:layout_constraintTop_toBottomOf="@+id/log"
+        app:layout_constraintVertical_bias="0.724" />
 
     <Button
         android:id="@+id/runFlightPlan"
