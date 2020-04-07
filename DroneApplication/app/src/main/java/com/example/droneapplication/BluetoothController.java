@@ -151,7 +151,7 @@ public class BluetoothController extends AppCompatActivity{
                 {
                      mHandler.obtainMessage(CreateList).sendToTarget();
                 }
-                else    
+                else
                 {
                     File externalDirectory = mApplicationContext.getExternalFilesDir(null);
                     File [] folderFiles= externalDirectory.listFiles();
