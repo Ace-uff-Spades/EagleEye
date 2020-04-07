@@ -1,10 +1,13 @@
 option batch abort
 option confirm off
-open sftp://pi:harmit1@raspberrypi.local/ -hostkey="ssh-ed25519 255 4XdYmGtMbtCC62H5n9SgSuEMBZ1wVWbP4ap4WAM6M74="
+open sftp://pi:harmit1@raspberrypi/ -hostkey="ssh-ed25519 255 4XdYmGtMbtCC62H5n9SgSuEMBZ1wVWbP4ap4WAM6M74="
 cd Documents
 cd EagleEye
 cd RaspberryPi
 cd outputData
-synchronize local "C:\Users\Harmit Badyal\AndroidStudioProjects\EagleEye\EdgeServer\InputData"
+synchronize local "C:\EagleEye\EdgeServer\Human_Recognition\input"
+cd ..
+cd inputData
+put "C:\EagleEye\EdgeServer\Human_Recognition\output\output.txt"
 exit
  

@@ -3,18 +3,22 @@ package com.example.droneapplication;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.media.ExifInterface;
 import android.os.Handler;
-import android.os.Message;
-import android.util.Log;
 
+
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Set;
 import java.util.UUID;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class BluetoothController extends AppCompatActivity{
@@ -23,18 +27,24 @@ public class BluetoothController extends AppCompatActivity{
     BluetoothDevice btDevice;
     SendReceive sendReceive;
     Handler mHandler;
+    public ArrayList<Bitmap> imageList;
+    public ArrayList<String> locationList;
+    public ExifInterface pictureExif;
     private BluetoothDevice device;
     private BluetoothSocket socket;
-    private final int MessageRecieved = 1;
-    private final int DoneMediaCreation = 2;
+    private Context mApplicationContext;
+    private final int CreateList = 0;
     public boolean doneDownloading;
     public boolean doneSending;
     private static final UUID MY_UUID = UUID.fromString("94f39d29-7d6d-437d-973b-fba39e49d4ee");
 
-    public BluetoothController(Handler Handler2)
+    public BluetoothController(Handler Handler2,Context mApplicationContext)
     {
         doneDownloading = false;
         doneSending = false;
+        imageList = new ArrayList<Bitmap>();
+        locationList = new ArrayList<String>();
+        this.mApplicationContext = mApplicationContext;
         this.mHandler = Handler2;
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if(!bluetoothAdapter.isEnabled())
@@ -64,18 +74,6 @@ public class BluetoothController extends AppCompatActivity{
         return true;
     }
 
-    Handler handler = new Handler(new Handler.Callback() {
-        @Override
-        public boolean handleMessage(Message message) {
-            switch(message.what){
-                case(2):
-                    mHandler.obtainMessage(2).sendToTarget();
-                    Log.e("Chicken","Small Chicken");
-                    break;
-            }
-            return false;
-        }
-    });
 
     public void writeToServer(byte[]bytes) throws IOException {
         sendReceive.write(bytes);
@@ -134,18 +132,6 @@ public class BluetoothController extends AppCompatActivity{
 
 
         public void run() {
-            /*byte[] buffer = new byte[1024];
-            int bytes = 0;
-            while (true) {
-                try {
-                    bytes = inputStream.read(buffer);
-                } catch (IOException e) {
-                    break;
-                }
-            }
-            mHandler.obtainMessage(2).sendToTarget();
-            Log.e("received","received");
-             */
             while(true) {
                 String value = "";
                 try {
@@ -157,9 +143,31 @@ public class BluetoothController extends AppCompatActivity{
                     doneDownloading=true;
                     doneSending=false;
                 }
-                if(value.equals("ok"))
+                else if(value.equals("ok"))
                 {
                     doneSending=true;
+                }
+                else if(value.equals("listView"))
+                {
+                     mHandler.obtainMessage(CreateList).sendToTarget();
+                }
+                else
+                {
+                    File externalDirectory = mApplicationContext.getExternalFilesDir(null);
+                    File [] folderFiles= externalDirectory.listFiles();
+                    int index = Integer.parseInt(value);
+                    Bitmap mbitmap = BitmapFactory.decodeFile(folderFiles[index].getAbsolutePath());
+                    imageList.add(mbitmap);
+
+                    try {
+                        pictureExif = new ExifInterface(folderFiles[index].getAbsolutePath());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    float[] latLong = new float[2];
+                    pictureExif.getLatLong(latLong);
+                    String location = "(Lat: "+latLong[0]+", Long: "+latLong[1]+")";
+                    locationList.add(location);
                 }
             }
         }

@@ -22,8 +22,11 @@ import android.os.IBinder;
 import android.os.Message;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -117,9 +120,7 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
 
     private ArrayList<Integer> mediaToDownload;
 
-    private final int MessageRecieved = 1;
-
-    private final int DoneMediaCreation = 2;
+    private final int CreateList = 0;
 
     private boolean mediaDoneDownloading;
 
@@ -127,9 +128,9 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
 
     TextView viewer,viewer2;
 
-    Button findNetworks,connectDrone,takeOffBtn,landBtn,connect,findDevice,sendPic,takePic, moveActivity;
+    Button findNetworks,connectDrone,takeOffBtn,landBtn,connect,findDevice,sendPic,takePic, moveActivity,tiltDown;
 
-    ListView wifiViewer;
+    ListView wifiViewer,resultViewer;
 
     Bitmap bitmap;
 
@@ -149,25 +150,21 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        resultViewer = findViewById(R.id.resultViewer);
         Handler mHandler = new Handler(new Handler.Callback() {
             @Override
             public boolean handleMessage(@NonNull Message message) {
                 switch(message.what) {
-                    case (MessageRecieved):
-                        byte[] readBuff = (byte[]) message.obj;
-                        String tempMsg=new String(readBuff,0,message.arg1);
-                        Log.e("SUCCESS","THE SECOND POTATO");
-                        viewer.setText(tempMsg);
-                        break;
-                    case(DoneMediaCreation):
-                        mediaDoneDownloading=true;
-                        Log.e("SUCCESS","POTATOOOO");
+                    case (CreateList):
+                        CustomAdapter customAdapter = new CustomAdapter();
+                        resultViewer.setAdapter(customAdapter);
                         break;
                 }
                 return false;
             }
         });
-        mBluetoothController = new BluetoothController(mHandler);
+        mBluetoothController = new BluetoothController(mHandler,getApplicationContext());
+        tiltDown = findViewById(R.id.tiltDown);
         findNetworks = findViewById(R.id.findNetworks);
         connectDrone = findViewById(R.id.connectBtn);
         wifiViewer = findViewById(R.id.wifiViewer);
@@ -187,6 +184,12 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
     @SuppressLint("WrongThread")
     public void implementListeners()
     {
+        tiltDown.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mARDeviceController.getFeatureARDrone3().setCameraOrientation((byte)-100,(byte)0);
+            }
+        });
         //Drone takes a picture
         takePic.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -200,20 +203,8 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
             @Override
             public void onClick(View view) {
                 viewer.setText("Fetching Media");
-                //createDataTransferManager();
-                //fetchMediasList();
-                ArrayList<Integer> temp = new ArrayList<>();
-                temp.add(0);
-                temp.add(1);
-                try {
-                    sendMedias(temp);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } catch (ARDataTransferException e) {
-                    e.printStackTrace();
-                }
+                createDataTransferManager();
+                fetchMediasList();
             }
         });
 
@@ -276,7 +267,6 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
         moveActivity.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //moveRelativeLocation((String)xcord.getText(),(String)ycord.getText(),(String)zcord.getText(),(String)psicord.getText());
                 openMoveActivity();
             }
         });
@@ -732,6 +722,35 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
         localBroadcastMgr.unregisterReceiver(mArdiscoveryServicesDevicesListUpdatedReceiver);
     }
 
+    class CustomAdapter extends BaseAdapter{
+
+        @Override
+        public int getCount() {
+            return mBluetoothController.imageList.size();
+        }
+
+        @Override
+        public Object getItem(int i) {
+            return null;
+        }
+
+        @Override
+        public long getItemId(int i) {
+            return 0;
+        }
+
+        @Override
+        public View getView(int i, View view, ViewGroup viewGroup) {
+            view = getLayoutInflater().inflate(R.layout.customlayout,null);
+
+            ImageView imageView = (ImageView)view.findViewById(R.id.imageView2);
+            TextView textView_location = (TextView)view.findViewById(R.id.textView_location);
+
+            imageView.setImageBitmap(mBluetoothController.imageList.get(i));
+            textView_location.setText(mBluetoothController.locationList.get(i));
+            return view;
+        }
+    }
 
     //All the listeners
     @Override
@@ -765,6 +784,13 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
                 if (args != null) {
                     Integer batValue = (Integer) args.get(ARFeatureCommon.ARCONTROLLER_DICTIONARY_KEY_COMMON_COMMONSTATE_BATTERYSTATECHANGED_PERCENT);
                     // do what you want with the battery level
+                }
+            }
+            if ((commandKey == ARCONTROLLER_DICTIONARY_KEY_ENUM.ARCONTROLLER_DICTIONARY_KEY_ARDRONE3_CAMERASTATE_ORIENTATION) && (elementDictionary != null)){
+                ARControllerArgumentDictionary<Object> args = elementDictionary.get(ARControllerDictionary.ARCONTROLLER_DICTIONARY_SINGLE_KEY);
+                if (args != null) {
+                    byte tilt = (byte)((Integer)args.get(ARFeatureARDrone3.ARCONTROLLER_DICTIONARY_KEY_ARDRONE3_CAMERASTATE_ORIENTATION_TILT)).intValue();
+                    byte pan = (byte)((Integer)args.get(ARFeatureARDrone3.ARCONTROLLER_DICTIONARY_KEY_ARDRONE3_CAMERASTATE_ORIENTATION_PAN)).intValue();
                 }
             }
             if (commandKey == ARCONTROLLER_DICTIONARY_KEY_ENUM.ARCONTROLLER_DICTIONARY_KEY_ARDRONE3_PILOTINGSTATE_FLYINGSTATECHANGED)
@@ -815,14 +841,7 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
             @Override
             public void run()
             {
-                /*
-                ARMediaObject mediaObject = getMediaAtIndex(index);
-                if (mediaObject != null)
-                {
-                    mediaObject.updateThumbnailWithDataTransferMedia(getResources(), media);
-                    // after that, you can retrieve the thumbnail through mediaObject.getThumbnail()
-                }
-                 */
+
             }
         });
     }

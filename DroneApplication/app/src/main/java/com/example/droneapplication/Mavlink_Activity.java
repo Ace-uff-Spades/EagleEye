@@ -125,17 +125,27 @@ public class Mavlink_Activity extends AppCompatActivity {
         });
 
         runFlightPlan = findViewById(R.id.runFlightPlan);
+        //runFlightPlan.setOnClickListener(new View.OnClickListener() {
+            /*
+            @Override
+            public void onClick(View view) {
+                try {
+                    //runMavlink(filename);
+=======
         runFlightPlan.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 try {
                     runMavlink(filename);
+>>>>>>> fe237e7048badaa8822db8974a9cdb1fa275f565
                 } catch (ARControllerException e) {
                     addToLogs(e.toString());
                 }
             }
-        });
+<<<<<<< HEAD
 
+             */
+        //});
         stopFlightPlan = findViewById(R.id.stopFlightplan);
         stopFlightPlan.setOnClickListener(new View.OnClickListener() {
             @Override
