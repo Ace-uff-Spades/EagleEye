@@ -128,7 +128,7 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
 
     TextView viewer,viewer2;
 
-    Button findNetworks,connectDrone,takeOffBtn,landBtn,connect,findDevice,sendPic,takePic, moveActivity,tiltDown;
+    Button findNetworks,connectDrone,takeOffBtn,landBtn,connect,findDevice,sendPic,takePic, moveActivity,tiltDown,resetTilt;
 
     ListView wifiViewer,resultViewer;
 
@@ -177,6 +177,7 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
         takePic = findViewById(R.id.takePic);
         findDevice=findViewById(R.id.findDevice);
         moveActivity = findViewById(R.id.move_activity);
+        resetTilt = findViewById(R.id.resetTilt);
         ARSDK.loadSDKLibs();
         implementListeners();
     }
@@ -184,6 +185,12 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
     @SuppressLint("WrongThread")
     public void implementListeners()
     {
+        resetTilt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mARDeviceController.getFeatureARDrone3().setCameraOrientation((byte)0,(byte)0);
+            }
+        });
         tiltDown.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
