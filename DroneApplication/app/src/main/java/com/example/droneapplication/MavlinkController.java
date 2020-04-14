@@ -1,20 +1,12 @@
 package com.example.droneapplication;
 
-import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
-import android.text.SpannableString;
-import android.text.method.ScrollingMovementMethod;
-import android.util.Log;
 import android.os.HandlerThread;
-import android.view.View;
-import android.widget.Button;
-import android.widget.Scroller;
-import android.widget.TextView;
+import android.util.Log;
+
 
 import com.parrot.arsdk.arcommands.ARCOMMANDS_ARDRONE3_GPSSETTINGSSTATE_GPSUPDATESTATECHANGED_STATE_ENUM;
 import com.parrot.arsdk.arcommands.ARCOMMANDS_ARDRONE3_GPSSETTINGS_HOMETYPE_TYPE_ENUM;
-import com.parrot.arsdk.arcommands.ARCOMMANDS_ARDRONE3_PICTURESETTINGS_PICTUREFORMATSELECTION_TYPE_ENUM;
 import com.parrot.arsdk.arcommands.ARCOMMANDS_ARDRONE3_PILOTINGSTATE_FLYINGSTATECHANGED_STATE_ENUM;
 import com.parrot.arsdk.arcommands.ARCOMMANDS_COMMON_CALIBRATIONSTATE_MAGNETOCALIBRATIONAXISTOCALIBRATECHANGED_AXIS_ENUM;
 import com.parrot.arsdk.arcommands.ARCOMMANDS_COMMON_COMMONSTATE_SENSORSSTATESLISTCHANGED_SENSORNAME_ENUM;
@@ -38,18 +30,13 @@ import com.parrot.arsdk.ardatatransfer.ARDataTransferManager;
 import com.parrot.arsdk.ardatatransfer.ARDataTransferUploader;
 import com.parrot.arsdk.ardatatransfer.ARDataTransferUploaderCompletionListener;
 import com.parrot.arsdk.ardatatransfer.ARDataTransferUploaderProgressListener;
-import com.parrot.arsdk.armavlink.ARMAVLINK_ERROR_ENUM;
 import com.parrot.arsdk.armavlink.ARMavlinkException;
 import com.parrot.arsdk.armavlink.ARMavlinkFileGenerator;
 import com.parrot.arsdk.armavlink.ARMavlinkMissionItem;
-import com.parrot.arsdk.armavlink.MAV_ROI;
-import com.parrot.arsdk.armavlink.MAV_VIEW_MODE_TYPE;
 import com.parrot.arsdk.arutils.ARUTILS_ERROR_ENUM;
 import com.parrot.arsdk.arutils.ARUtilsManager;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -58,142 +45,59 @@ import java.util.List;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-public class Mavlink_Activity extends AppCompatActivity {
+public class MavlinkController extends AppCompatActivity{
 
-    private static final String TAG = "Mavlink_Activity";
-
-    TextView Logs, calibrateCheck, gpsFixedCheck, mavlinkFile;
-
-    Button  writeMavlinkFile, runFlightPlan, calibrate, stopFlightPlan, gpsFixed;
-
-    public static ARDeviceController mARDeviceController = MainActivity.mARDeviceController;
-
-    private ARDataTransferManager dataTransferManager;
-
-    private ARUtilsManager uploadManager;
-
-    private ARDataTransferUploader uploader;
-
-    private HandlerThread uploadHandlerThread;
-
-    private ARMavlinkFileGenerator MavController;
-
+    private static final String TAG = "Mavlink_Thread";
     private static final int DEVICE_PORT = 61;
-
-    protected static String MAVLINK_STORAGE_DIRECTORY;
-
-    private ARDATATRANSFER_ERROR_ENUM uploadError;
-
-    File mavFile;
-
     final String filename = "flightplan.mavlink5";
-
     private final String productIP = "192.168.42.1";
 
-    //Constructor
-    public Mavlink_Activity() throws InterruptedException, ARControllerException {
-        calibrate();
-        fixGPS();
-        //File controller
+    public static ARDeviceController mARDeviceController;
+    private ARDataTransferManager dataTransferManager;
+    private ARUtilsManager uploadManager;
+    private ARDataTransferUploader uploader;
+    private HandlerThread uploadHandlerThread;
+    private ARMavlinkFileGenerator MavController;
+
+
+    protected static String MAVLINK_STORAGE_DIRECTORY;
+    private ARDATATRANSFER_ERROR_ENUM uploadError;
+    File mavFile;
+    private Cord[] cords;
+
+    public MavlinkController(Cord[] cords){
+        mARDeviceController = MainActivity.mARDeviceController;
+        this.cords = cords;
+    }
+
+    public int start(){
+        //Run the whole sequence to flightplan
         try {
             MavController = new ARMavlinkFileGenerator();
+            calibrate();
+            fixGPS();
+            createMavlinkFile();
+            createFlightPlan();
+            transmitMavlinkFile(mARDeviceController.getFeatureCommon(), filename);
+            runMavlink(filename);
+            ARCOMMANDS_ARDRONE3_PILOTINGSTATE_FLYINGSTATECHANGED_STATE_ENUM state = getPilotingState();
+            while(state.getValue() != 0){
+                state = getPilotingState();
+            }
+            return 1;
+
+
         } catch (ARMavlinkException e) {
             Log.e(TAG, "COULDN'T CREATE MAVLINK CONTROLLER");
+        } catch (InterruptedException | ARControllerException e) {
+            Log.e(TAG, "PROBLEM CALIBRATING OR FIXING GPS");
+        } catch (IOException e) {
+            Log.e(TAG, "PROBLEM CREATING FLIGHPLAN");
         }
+        return 0;
     }
 
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_mavlink);
-
-        gpsFixedCheck = findViewById(R.id.gpsFixedCheck);
-        Logs = findViewById(R.id.log);
-        Logs.setMovementMethod(new ScrollingMovementMethod());
-
-        calibrateCheck = findViewById(R.id.calibrateCheck);
-        mavlinkFile = findViewById(R.id.mavlinkFile);
-
-        gpsFixed = findViewById(R.id.gpsFix);
-        gpsFixed.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                try {
-                    fixGPS();
-                } catch (ARControllerException e) {
-                    Log.e(TAG, "ERROR FIXING GPS: " + e.getMessage());
-                    addToLogs("ERROR FIXING GPS: " + e.getMessage());
-                }
-            }
-        });
-
-        writeMavlinkFile = findViewById(R.id.writeMavfile);
-        writeMavlinkFile.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                try {
-                    createMavlinkFile();
-                    createFlightPlan();
-                    transmitMavlinkFile(mARDeviceController.getFeatureCommon(), mavFile.getPath());
-                } catch (IOException e) {
-                    Log.e(TAG, e.getMessage());
-                    addToLogs(e.getMessage());
-                }
-            }
-        });
-
-        runFlightPlan = findViewById(R.id.runFlightPlan);
-        runFlightPlan.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                try {
-                    runMavlink(filename);
-                } catch (ARControllerException e) {
-                    addToLogs(e.toString());
-                }
-            }});
-        stopFlightPlan = findViewById(R.id.stopFlightplan);
-        stopFlightPlan.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                try {
-                    stopMavlink();
-                } catch (ARControllerException e) {
-                    Log.e(TAG, "ERROR STOPPING MAVLINK FILE: " + e.getMessage());
-                    addToLogs("ERROR STOPPING MAVLINK FILE: " + e.getMessage());
-                }
-            }
-        });
-
-        calibrate = findViewById(R.id.calibrate);
-        calibrate.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                try {
-                    calibrate();
-                } catch (ARControllerException | InterruptedException e) {
-                    Log.e(TAG, "CALIBRATION ERROR: " + e.getMessage());
-                    addToLogs("CALIBRATION ERROR: " + e.getMessage());
-                }
-            }
-        });
-        //File controller
-        try {
-            MavController = new ARMavlinkFileGenerator();
-        } catch (ARMavlinkException e) {
-            Log.e(TAG, "COULDN'T CREATE MAVLINK CONTROLLER");
-        }
-    }
-
-    /**
-     * Calibrate is the main calibration method. Checks if the drones needs calibration.
-     * If it does, then sends a singal to drone to start calibration
-     * Calls the calibrating method which prompts what axis to calibrate.
-     * If successful then returns. If not then prints out all the motors and their status.
-     * @throws ARControllerException
-     * @throws InterruptedException
-     */
     private void calibrate() throws ARControllerException, InterruptedException {
 
         List<ARCONTROLLER_DICTIONARY_KEY_ENUM> commandListCamera = new ArrayList<ARCONTROLLER_DICTIONARY_KEY_ENUM>();
@@ -221,14 +125,12 @@ public class Mavlink_Activity extends AppCompatActivity {
                     byte required = (byte) ((Integer) args.get(ARFeatureCommon.ARCONTROLLER_DICTIONARY_KEY_COMMON_CALIBRATIONSTATE_MAGNETOCALIBRATIONREQUIREDSTATE_REQUIRED)).intValue();
                     Log.e(TAG, "CALIBRATION IS REQUIRED: " + required);
                     if(required == 1){
-                        calibrateCheck.setText("0");
                         addToLogs("CALIBRATION IS REQUIRED.");
                         ARCONTROLLER_ERROR_ENUM calibrationError = mARDeviceController.getFeatureCommon().sendCalibrationMagnetoCalibration((byte) 1);
                         Log.e(TAG, "CALIBRATION ERROR: " + calibrationError);
                     }
                     if(required == 0){
                         addToLogs("ALREADY CALIBRATED.");
-                        calibrateCheck.setText("1");
                         return;
                     }
                 }
@@ -250,7 +152,6 @@ public class Mavlink_Activity extends AppCompatActivity {
                     if(calibrating()){
                         Log.e(TAG, "CALIBRATION SUCCESSFUL");
                         addToLogs("CALIBRATION SUCCESSFUL");
-                        calibrateCheck.setText("1");
                         return;
                     }
                 }
@@ -391,7 +292,6 @@ public class Mavlink_Activity extends AppCompatActivity {
                 ARControllerArgumentDictionary<Object> argsFixed = elementDictionary.get(ARControllerDictionary.ARCONTROLLER_DICTIONARY_SINGLE_KEY);
                 if (argsFixed != null) {
                     byte fixed = (byte) ((Integer) argsFixed.get(ARFeatureARDrone3.ARCONTROLLER_DICTIONARY_KEY_ARDRONE3_GPSSETTINGSSTATE_GPSFIXSTATECHANGED_FIXED)).intValue();
-                    gpsFixedCheck.setText(String.format("%s", fixed));
                     List<Float> position = getDronePosition();
                     addToLogs( "GPS Postion: (" + position.get(0) + "," + position.get(1) + "," + position.get(2) + ")");
                     ARCONTROLLER_ERROR_ENUM error = mARDeviceController.getFeatureARDrone3().sendGPSSettingsHomeType(ARCOMMANDS_ARDRONE3_GPSSETTINGS_HOMETYPE_TYPE_ENUM.ARCOMMANDS_ARDRONE3_GPSSETTINGS_HOMETYPE_TYPE_TAKEOFF);
@@ -433,8 +333,12 @@ public class Mavlink_Activity extends AppCompatActivity {
 
 
         //add custom flight plan here
-        addMavlinkCommands(1,40.326402, -74.551778,4,30);
-        addMavlinkCommands(2, 0,0,0,0);
+        for(int i = 0; i<cords.length; i++) {
+            if(cords[i] != null) {
+                addMavlinkCommands(1, (float) cords[i].getLatitude(), (float) cords[i].getLongitude(), (float) cords[i].altitude, (float) cords[i].getYaw());
+                addMavlinkCommands(2, 0, 0, 0, 0);
+            }
+        }
 
 
         //Land at start position
@@ -565,10 +469,6 @@ public class Mavlink_Activity extends AppCompatActivity {
             MavlinkFileController(list);
         }
     }
-    /**
-     * Stops the Mavlink file when it's running
-     * @throws ARControllerException
-     */
     public void stopMavlink() throws ARControllerException {
         List<ARCONTROLLER_DICTIONARY_KEY_ENUM> list = new ArrayList<ARCONTROLLER_DICTIONARY_KEY_ENUM>();
 
@@ -602,6 +502,7 @@ public class Mavlink_Activity extends AppCompatActivity {
         }
 
     }
+
     /**
      * Helper method for running and stopping mavlink file.
      * Retrieves status's of multiple things while mavlinkfile is executing
@@ -733,8 +634,7 @@ public class Mavlink_Activity extends AppCompatActivity {
     }
 
     public void addToLogs(String newLog){
-        String oldLogs = Logs.getText().toString();
-        Logs.setText(new SpannableString(String.format("%s\n%s", oldLogs, newLog)));
+
     }
 
     private class UploadListener implements ARDataTransferUploaderProgressListener, ARDataTransferUploaderCompletionListener {
@@ -784,18 +684,4 @@ public class Mavlink_Activity extends AppCompatActivity {
         }
     }
 
-    private class Cord {
-        private float lat;
-        private float lon;
-        private Cord(double lat, double lon){
-            this.lat = (float)lat;
-            this.lon = (float)lon;
-        }
-
-        @NonNull
-        @Override
-        public String toString() {
-            return "( " + lat + ", " + lon + " )";
-        }
-    }
 }

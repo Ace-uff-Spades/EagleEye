@@ -28,7 +28,7 @@ public class BluetoothController extends AppCompatActivity{
     SendReceive sendReceive;
     Handler mHandler;
     public ArrayList<Bitmap> imageList;
-    public ArrayList<String> locationList;
+    public ArrayList<Cord> locationList;
     public ExifInterface pictureExif;
     private BluetoothDevice device;
     private BluetoothSocket socket;
@@ -43,7 +43,7 @@ public class BluetoothController extends AppCompatActivity{
         doneDownloading = false;
         doneSending = false;
         imageList = new ArrayList<Bitmap>();
-        locationList = new ArrayList<String>();
+        locationList = new ArrayList<Cord>();
         this.mApplicationContext = mApplicationContext;
         this.mHandler = Handler2;
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -166,7 +166,7 @@ public class BluetoothController extends AppCompatActivity{
                     }
                     float[] latLong = new float[2];
                     pictureExif.getLatLong(latLong);
-                    String location = "(Lat: "+latLong[0]+", Long: "+latLong[1]+")";
+                    Cord location = new Cord((double)latLong[0], (double)latLong[0],0,0);
                     locationList.add(location);
                 }
             }

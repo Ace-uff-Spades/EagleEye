@@ -1,4 +1,4 @@
-# file: rfcomm-server.py
+œ# file: rfcomm-server.py
 # auth: Albert Huang <albert@csail.mit.edu>
 # desc: simple demonstration of a server application that uses RFCOMM sockets
 #

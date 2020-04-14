@@ -7,7 +7,7 @@ android {
     defaultConfig {
         applicationId "com.example.droneapplication"
 
-        minSdkVersion 27
+        minSdkVersion 22
         targetSdkVersion 28
         versionCode 1
         versionName "1.0"

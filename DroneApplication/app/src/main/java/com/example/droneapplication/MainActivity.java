@@ -79,71 +79,57 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
     public static final String TAG = "DroneDiscoverer";
 
     private final Context mContext;
-
     private ARDiscoveryDeviceService myDeviceService;
-
     private ARDiscoveryServicesDevicesListUpdatedReceiver mArdiscoveryServicesDevicesListUpdatedReceiver;
-
     private ARDiscoveryService mArdiscoveryService;
-
     private ServiceConnection mArdiscoveryServiceConnection;
-
     private ARDiscoveryDevice mARDiscoveryDevice;
-
     public static ARDeviceController mARDeviceController;
-
     private ARCONTROLLER_DEVICE_STATE_ENUM mState;
-
     private BluetoothController mBluetoothController;
+    private MavlinkController mMavlinkThread;
 
     private static final int DEVICE_PORT = 21;
-
     private static final String MEDIA_FOLDER = "internal_000";
 
     private AsyncTask<Void, Float, ArrayList<ARMediaObject>> getMediaAsyncTask;
-
     private Handler mFileTransferThreadHandler;
-
     private HandlerThread mFileTransferThread;
 
     private boolean isRunning = false;
-
     private boolean isDownloading = false;
 
     private final Object lock = new Object();
 
     private ARDataTransferManager dataTransferManager;
-
     private ARUtilsManager ftpListManager;
-
     private ARUtilsManager ftpQueueManager;
-
     private ArrayList<Integer> mediaToDownload;
 
     private final int CreateList = 0;
-
     private boolean mediaDoneDownloading;
-
     public ExifInterface pictureExif;
 
     TextView viewer,viewer2;
-
-    Button findNetworks,connectDrone,takeOffBtn,landBtn,connect,findDevice,sendPic,takePic, moveActivity,tiltDown,resetTilt;
-
+    Button findNetworks,connectDrone,takeOffBtn,landBtn,connect,findDevice,sendPic,takePic, moveActivity,tiltDown,stopMavlink;
     ListView wifiViewer,resultViewer;
-
     Bitmap bitmap;
+    Cord[] cords;
 
     public MainActivity() {
         mediaDoneDownloading = false;
         this.mArdiscoveryServicesDevicesListUpdatedReceiver = null;
         this.mContext = null;
-        mARDiscoveryDevice=null;
+        mARDiscoveryDevice = null;
         myDeviceService = null;
         mState = ARCONTROLLER_DEVICE_STATE_ENUM.ARCONTROLLER_DEVICE_STATE_STOPPED;
-        getMediaAsyncTask=null;
+        getMediaAsyncTask = null;
         mediaToDownload = new ArrayList<>();
         bitmap = null;
+
+        //THIS IS WHERE THE COORDINGATES OF THE INITIAL AREA TO FLY THROUGH GOES
+        cords = new Cord[4];
+        cords[0] = new Cord(40.326405, -74.551757, 4, 0);
     }
 
     @Override
@@ -158,12 +144,30 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
                     case (CreateList):
                         CustomAdapter customAdapter = new CustomAdapter();
                         resultViewer.setAdapter(customAdapter);
+
+                        //Create the Return Mavlink File with the updated locationList
+                        cords = new Cord[mBluetoothController.locationList.size()];
+                        for(int i = 0; i<cords.length; i++) {
+                            cords[i] = mBluetoothController.locationList.get(i);
+                        }
+                        mMavlinkThread = new MavlinkController(cords);
+                        int result = mMavlinkThread.start();
+                        if(result == 1){
+                            Log.e(TAG, "SUCCESSFULLY WENT TO PERSON OF INTEREST");
+                        }
+                        else if(result == 0){
+                            Log.e(TAG, "NOT SUCCESSFULL ON RETURN FLIGHTPLAN");
+                        }
+
                         break;
                 }
                 return false;
             }
         });
         mBluetoothController = new BluetoothController(mHandler,getApplicationContext());
+
+        //Creating Mavlink Controller
+        mMavlinkThread = new MavlinkController(cords);
         tiltDown = findViewById(R.id.tiltDown);
         findNetworks = findViewById(R.id.findNetworks);
         connectDrone = findViewById(R.id.connectBtn);
@@ -177,7 +181,7 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
         takePic = findViewById(R.id.takePic);
         findDevice=findViewById(R.id.findDevice);
         moveActivity = findViewById(R.id.move_activity);
-        resetTilt = findViewById(R.id.resetTilt);
+        stopMavlink = findViewById(R.id.StopMavlink);
         ARSDK.loadSDKLibs();
         implementListeners();
     }
@@ -185,16 +189,20 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
     @SuppressLint("WrongThread")
     public void implementListeners()
     {
-        resetTilt.setOnClickListener(new View.OnClickListener() {
+        stopMavlink.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mARDeviceController.getFeatureARDrone3().setCameraOrientation((byte)0,(byte)0);
+                try {
+                    mMavlinkThread.stopMavlink();
+                } catch (ARControllerException e) {
+                    Log.e(TAG, "COULDN'T STOP MAVLINK");
+                }
             }
         });
         tiltDown.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mARDeviceController.getFeatureARDrone3().setCameraOrientation((byte)-100,(byte)0);
+                mARDeviceController.getFeatureARDrone3().setCameraOrientation((byte)-50,(byte)0);
             }
         });
         //Drone takes a picture
@@ -260,7 +268,19 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
         takeOffBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                takeoff();
+                //takeoff();
+                int result = mMavlinkThread.start();
+                if(result == 0){
+                    Log.e(TAG, "MAVLINK THREAD DIDN'T WORK");
+                }
+                else if(result == 1) {
+                    createDataTransferManager();
+                    fetchMediasList();
+                    Log.e(TAG, "CONNECTED TO PI AND TRANSMITTING PICTURES.....");
+                }
+                else {
+                    Log.e(TAG, "MAVLINKTHREAD RETURNED SOME SHIT THAT WE DON'T KNOW");
+                }
             }
         });
         landBtn.setOnClickListener(new View.OnClickListener() {
@@ -754,7 +774,7 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
             TextView textView_location = (TextView)view.findViewById(R.id.textView_location);
 
             imageView.setImageBitmap(mBluetoothController.imageList.get(i));
-            textView_location.setText(mBluetoothController.locationList.get(i));
+            textView_location.setText(mBluetoothController.locationList.get(i).toString());
             return view;
         }
     }
