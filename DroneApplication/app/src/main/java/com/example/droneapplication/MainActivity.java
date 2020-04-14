@@ -654,18 +654,16 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
             byte[] imageBytes = stream.toByteArray();
 
             mBluetoothController.writeToServer(("sendpictures").getBytes());
-            Thread.sleep(30);
+            Thread.sleep(70);
             for (int y = 0; y < imageBytes.length; y += 700) {
-                while(!mBluetoothController.doneSending){}
-                mBluetoothController.doneSending=false;
+                Thread.sleep(70);
                 mBluetoothController.writeToServer(Arrays.copyOfRange(imageBytes, y, Math.min(y + 700, imageBytes.length)));
             }
-            Thread.sleep(20);
+            Thread.sleep(70);
             mBluetoothController.writeToServer("done".getBytes());
             while(!mBluetoothController.doneDownloading) { }
-
             mBluetoothController.doneDownloading=false;
-            Thread.sleep(20);
+            Thread.sleep(70);
         }
 
         mBluetoothController.doneSending=false;
