@@ -25,12 +25,12 @@ def checkIfDone():
         #deleteFiles()
 
     except FileNotFoundError:
-        print('UPLOAD INCOMPLETE...')
+        print('')
 
 def autoCheck () :
     while (True):
         checkIfDone()
-        time.sleep(10)
+        time.sleep(2)
 
 autoCheck()
 	

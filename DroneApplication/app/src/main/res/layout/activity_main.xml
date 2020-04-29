@@ -56,15 +56,20 @@
 
     <Button
         android:id="@+id/takeOffBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="147dp"
+        android:layout_height="39dp"
         android:text="Take Off"
+        android:textSize="12sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintHorizontal_bias="0.481"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+<<<<<<< HEAD
         app:layout_constraintVertical_bias="0.822" />
+=======
+        app:layout_constraintVertical_bias="0.839" />
+>>>>>>> d6e0dc2ea01908ff3f8d6bc6a2dd321a433f921d
 
     <Button
         android:id="@+id/landBtn"
@@ -183,14 +188,14 @@
 
     <ListView
         android:id="@+id/resultViewer"
-        android:layout_width="402dp"
-        android:layout_height="248dp"
+        android:layout_width="334dp"
+        android:layout_height="270dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.444"
+        app:layout_constraintHorizontal_bias="0.051"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.625" />
+        app:layout_constraintVertical_bias="0.607" />
 
     <Button
         android:id="@+id/tiltDown"

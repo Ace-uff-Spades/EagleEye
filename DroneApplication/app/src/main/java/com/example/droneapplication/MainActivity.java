@@ -106,6 +106,7 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
     private ARUtilsManager ftpQueueManager;
     private ArrayList<Integer> mediaToDownload;
 
+    public int didMediaDownload;
     private final int CreateList = 0;
     private boolean mediaDoneDownloading;
     public ExifInterface pictureExif;
@@ -126,8 +127,9 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
         getMediaAsyncTask = null;
         mediaToDownload = new ArrayList<>();
         bitmap = null;
-
+        didMediaDownload=0;
         //THIS IS WHERE THE COORDINGATES OF THE INITIAL AREA TO FLY THROUGH GOES
+<<<<<<< HEAD
         cords = new Cord[9];
         cords[0] = new Cord(40.344862, -74.560916, 4, 0);
         cords[1] = new Cord(40.344870, -74.560589, 4, 0);
@@ -138,6 +140,14 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
         cords[6] = new Cord(40.344563, -74.560005, 4, 0);
         cords[7] = new Cord(40.344575, -74.560499, 4, 0);
         cords[8] = new Cord(40.344596, -74.561041, 4, 0);
+=======
+        cords = new Cord[4];
+        cords[0] = new Cord(40.3442014, -74.5614818, 6, 0);
+        cords[1] = new Cord(40.3443000, -74.5613500, 6, 30);
+        cords[2] = new Cord(40.3443419, -74.5612575, 6, 30);
+        cords[3] = new Cord(40.3444000, -74.5612000, 6, 30);
+
+>>>>>>> d6e0dc2ea01908ff3f8d6bc6a2dd321a433f921d
     }
 
     @Override
@@ -150,15 +160,17 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
             public boolean handleMessage(@NonNull Message message) {
                 switch(message.what) {
                     case (CreateList):
+
                         CustomAdapter customAdapter = new CustomAdapter();
                         resultViewer.setAdapter(customAdapter);
 
                         //Create the Return Mavlink File with the updated locationList
+                        /*
                         cords = new Cord[mBluetoothController.locationList.size()];
                         for(int i = 0; i<cords.length; i++) {
                             cords[i] = mBluetoothController.locationList.get(i);
                         }
-                        mMavlinkThread = new MavlinkController(cords);
+                        mMavlinkThread = new MavlinkController(cords,getApplicationContext());
                         int result = mMavlinkThread.start();
                         if(result == 1){
                             Log.e(TAG, "SUCCESSFULLY WENT TO PERSON OF INTEREST");
@@ -166,6 +178,8 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
                         else if(result == 0){
                             Log.e(TAG, "NOT SUCCESSFULL ON RETURN FLIGHTPLAN");
                         }
+                        
+                         */
 
                         break;
                 }
@@ -173,6 +187,11 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
             }
         });
         mBluetoothController = new BluetoothController(mHandler,getApplicationContext());
+<<<<<<< HEAD
+=======
+
+        //Creating Mavlink Controller
+>>>>>>> d6e0dc2ea01908ff3f8d6bc6a2dd321a433f921d
         tiltDown = findViewById(R.id.tiltDown);
         findNetworks = findViewById(R.id.findNetworks);
         connectDrone = findViewById(R.id.connectBtn);
@@ -223,8 +242,20 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
             @Override
             public void onClick(View view) {
                 viewer.setText("Fetching Media");
-                createDataTransferManager();
-                fetchMediasList();
+                //createDataTransferManager();
+                //fetchMediasList();
+                ArrayList<Integer> list = new ArrayList<>();
+                for(int x=0;x<1;x++)
+                    list.add(x);
+                try {
+                    sendMedias();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (ARDataTransferException e) {
+                    e.printStackTrace();
+                }
             }
         });
 
@@ -266,8 +297,12 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
             @Override
             public void onClick(View view) {
                 createDeviceController();
+<<<<<<< HEAD
                 //Creating Mavlink Controller
                 mMavlinkThread = new MavlinkController(cords);
+=======
+                mMavlinkThread = new MavlinkController(cords,getApplicationContext());
+>>>>>>> d6e0dc2ea01908ff3f8d6bc6a2dd321a433f921d
             }
         });
 
@@ -603,6 +638,10 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
                         downloadMedias(mediaToDownload);
                     } catch (ARDataTransferException e) {
                         e.printStackTrace();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
                 }
             };
@@ -614,7 +653,7 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
     }
 
     //Download the medias on to phones internal memory
-    private void downloadMedias(ArrayList<Integer> mediaToDl) throws ARDataTransferException {
+    private void downloadMedias(ArrayList<Integer> mediaToDl) throws ARDataTransferException, IOException, InterruptedException {
         ARDataTransferMediasDownloader mediasDownloader = null;
         if (dataTransferManager != null)
         {
@@ -657,16 +696,26 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
             }
         }
         isDownloading = true;
+        while(true)
+        {
+            if(didMediaDownload==mediaToDl.size())
+            {
+                sendMedias();
+                break;
+            }
+        }
+        /*
         viewer.setText("Media Downloaded");
         try {
             sendMedias(mediaToDl);
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
+         */
     }
 
     //Send the media to the raspberry pi
-    public void sendMedias(ArrayList<Integer> mediaToDl) throws IOException, InterruptedException, ARDataTransferException {
+    public void sendMedias() throws IOException, InterruptedException, ARDataTransferException {
         viewer2.setText("Sending Media");
 
         //Fetches the picture files in phones directory
@@ -677,7 +726,7 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
         for (int x = 0; x < folderFiles.length; x++) {
             Bitmap mbitmap = BitmapFactory.decodeFile(folderFiles[x].getAbsolutePath());
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            mbitmap.compress(Bitmap.CompressFormat.JPEG, 40, stream);
+            mbitmap.compress(Bitmap.CompressFormat.JPEG, 50, stream);
             byte[] imageBytes = stream.toByteArray();
 
             mBluetoothController.writeToServer(("sendpictures").getBytes());
@@ -780,6 +829,7 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
 
             imageView.setImageBitmap(mBluetoothController.imageList.get(i));
             textView_location.setText(mBluetoothController.locationList.get(i).toString());
+
             return view;
         }
     }
@@ -859,7 +909,7 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
 
     @Override
     public void didMediaComplete(Object arg, ARDataTransferMedia media, ARDATATRANSFER_ERROR_ENUM error) {
-
+        didMediaDownload++;
     }
 
     @Override

@@ -6,9 +6,7 @@ from PIL.ExifTags import TAGS, GPSTAGS
 import os
 import json
 
-<<<<<<< HEAD
-#model initialization
-=======
+
 def get_exif(filename):
     image = Image.open(filename)
     image.verify()
@@ -48,7 +46,6 @@ def get_coordinates(geotags):
     return (lat,lon)
 
 
->>>>>>> fe237e7048badaa8822db8974a9cdb1fa275f565
 model_path = os.getcwd()
 input_path = os.path.join(model_path, "input")
 output_path = os.path.join(model_path, "output")
@@ -66,7 +63,6 @@ pixel_coordinates = {}
 
 #Iterate through the files in input and search for humans
 for filename in os.listdir(input_path):
-<<<<<<< HEAD
     if filename.endswith(".jpg"):
         detections = detector.detectCustomObjectsFromImage(custom_objects=custom, input_image=os.path.join(input_path , filename), output_image_path=os.path.join(output_path , "new" + filename), minimum_percentage_probability=50)
         i=i+1
@@ -94,18 +90,3 @@ with open('output/pixel_coordinates.json', 'w') as fp:
     json.dump(pixel_coordinates, fp)
 
 
-
-
-=======
-	if filename.endswith(".jpg"):
-		detections = detector.detectCustomObjectsFromImage(custom_objects=custom, input_image=os.path.join(input_path , filename), output_image_path=os.path.join(output_path , "new" + filename), minimum_percentage_probability=50)
-		print(filename)
-		for eachObject in detections:
-			x1, y1, x2, y2 = eachObject["box_points"]
-			print(eachObject["name"] , " : " , eachObject["percentage_probability"],  " : ", "("+str((x1+x2)*.5) + ", " + str(y2) +")")
-			if get_geotagging(get_exif(os.path.join(input_path, filename))) != "no GPS data": print(get_coordinates(get_geotagging(get_exif(os.path.join(input_path, filename)))))
-
-		continue
-	else:
-		continue
->>>>>>> fe237e7048badaa8822db8974a9cdb1fa275f565

@@ -1,5 +1,6 @@
 package com.example.droneapplication;
 
+import android.content.Context;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.Log;
@@ -58,14 +59,20 @@ public class MavlinkController extends AppCompatActivity{
     private ARDataTransferUploader uploader;
     private HandlerThread uploadHandlerThread;
     private ARMavlinkFileGenerator MavController;
-
+    public Context mApplicationContext;
 
     protected static String MAVLINK_STORAGE_DIRECTORY;
     private ARDATATRANSFER_ERROR_ENUM uploadError;
     File mavFile;
     private Cord[] cords;
 
+<<<<<<< HEAD
     public MavlinkController(Cord[] cords){
+=======
+    public MavlinkController(Cord[] cords,Context mApplicationContext){
+        this.mApplicationContext=mApplicationContext;
+        mARDeviceController = MainActivity.mARDeviceController;
+>>>>>>> d6e0dc2ea01908ff3f8d6bc6a2dd321a433f921d
         this.cords = cords;
     }
 
@@ -84,6 +91,21 @@ public class MavlinkController extends AppCompatActivity{
         }
 
         try {
+<<<<<<< HEAD
+=======
+            MavController = new ARMavlinkFileGenerator();
+            calibrate();
+        } catch (ARMavlinkException e) {
+            Log.e(TAG, "COULDN'T CREATE MAVLINK CONTROLLER");
+            return 0;
+        } catch (InterruptedException | ARControllerException e) {
+            e.getStackTrace();
+            Log.e(TAG, "PROBLEM CALIBRATING");
+            return 0;
+        }
+
+        try {
+>>>>>>> d6e0dc2ea01908ff3f8d6bc6a2dd321a433f921d
             fixGPS();
         } catch (ARControllerException e) {
             e.getStackTrace();
@@ -105,6 +127,7 @@ public class MavlinkController extends AppCompatActivity{
             runMavlink(filename);
             ARCOMMANDS_ARDRONE3_PILOTINGSTATE_FLYINGSTATECHANGED_STATE_ENUM state = getPilotingState();
             while(state.getValue() != 4){
+<<<<<<< HEAD
                 Log.e(TAG, "" + state.getValue());
                 state = getPilotingState();
             }
@@ -115,8 +138,19 @@ public class MavlinkController extends AppCompatActivity{
             Log.e(TAG, "PROBLEM RUNNING MAVLINK FILE");
             return 0;
         }
-    }
+=======
+                state = getPilotingState();
+            }
 
+            return 1;
+        }
+        catch(ARControllerException e){
+            e.getMessage();
+            Log.e(TAG, "PROBLEM RUNNING MAVLINK FILE");
+            return 0;
+        }
+>>>>>>> d6e0dc2ea01908ff3f8d6bc6a2dd321a433f921d
+    }
 
     private void calibrate() throws ARControllerException, InterruptedException {
 
@@ -267,8 +301,14 @@ public class MavlinkController extends AppCompatActivity{
         //commandListFlightplan.add(ARCONTROLLER_DICTIONARY_KEY_ENUM.ARCONTROLLER_DICTIONARY_KEY_COMMON_FLIGHTPLANSTATE_AVAILABILITYSTATECHANGED);
         //commandListFlightplan.add(ARCONTROLLER_DICTIONARY_KEY_ENUM.ARCONTROLLER_DICTIONARY_KEY_COMMON_FLIGHTPLANSTATE_COMPONENTSTATELISTCHANGED);
 
+<<<<<<< HEAD
         for(ARCONTROLLER_DICTIONARY_KEY_ENUM commandKey : list) {
             ARControllerDictionary elementDictionary = mARDeviceController.getCommandElements(commandKey);
+=======
+        for(ARCONTROLLER_DICTIONARY_KEY_ENUM commandKey : commandListFlightplan) {
+
+                ARControllerDictionary elementDictionary = mARDeviceController.getCommandElements(commandKey);
+>>>>>>> d6e0dc2ea01908ff3f8d6bc6a2dd321a433f921d
             //First move the camera down
             if ((commandKey == ARCONTROLLER_DICTIONARY_KEY_ENUM.ARCONTROLLER_DICTIONARY_KEY_COMMON_CAMERASETTINGSSTATE_CAMERASETTINGSCHANGED) && (elementDictionary != null)) {
                 ARControllerArgumentDictionary<Object> args = elementDictionary.get(ARControllerDictionary.ARCONTROLLER_DICTIONARY_SINGLE_KEY);
@@ -302,8 +342,8 @@ public class MavlinkController extends AppCompatActivity{
     public void fixGPS() throws ARControllerException {
         List<ARCONTROLLER_DICTIONARY_KEY_ENUM> commandListGPS = new ArrayList<>();
         commandListGPS.add(ARCONTROLLER_DICTIONARY_KEY_ENUM.ARCONTROLLER_DICTIONARY_KEY_ARDRONE3_GPSSETTINGSSTATE_GPSFIXSTATECHANGED);
-        commandListGPS.add(ARCONTROLLER_DICTIONARY_KEY_ENUM.ARCONTROLLER_DICTIONARY_KEY_ARDRONE3_GPSSETTINGSSTATE_GPSUPDATESTATECHANGED);
-        commandListGPS.add(ARCONTROLLER_DICTIONARY_KEY_ENUM.ARCONTROLLER_DICTIONARY_KEY_ARDRONE3_GPSSETTINGSSTATE_RESETHOMECHANGED);
+        //commandListGPS.add(ARCONTROLLER_DICTIONARY_KEY_ENUM.ARCONTROLLER_DICTIONARY_KEY_ARDRONE3_GPSSETTINGSSTATE_GPSUPDATESTATECHANGED);
+        //commandListGPS.add(ARCONTROLLER_DICTIONARY_KEY_ENUM.ARCONTROLLER_DICTIONARY_KEY_ARDRONE3_GPSSETTINGSSTATE_RESETHOMECHANGED);
 
         for(ARCONTROLLER_DICTIONARY_KEY_ENUM commandKey : commandListGPS) {
             ARControllerDictionary elementDictionary = mARDeviceController.getCommandElements(commandKey);
@@ -345,7 +385,7 @@ public class MavlinkController extends AppCompatActivity{
         List<Float> position = getDronePosition();
         ARMavlinkMissionItem takePanarama = ARMavlinkMissionItem.CreateMavlinkCreatePanoramaMissionItem(0,(float)-100,0,(float)30);
         ARMavlinkMissionItem takeoff = ARMavlinkMissionItem.CreateMavlinkTakeoffMissionItem(position.get(0),position.get(1), 2,0, 0);
-        ARMavlinkMissionItem initialAltitude = ARMavlinkMissionItem.CreateMavlinkNavWaypointMissionItem(position.get(0),position.get(1), 5, 220);
+        ARMavlinkMissionItem initialAltitude = ARMavlinkMissionItem.CreateMavlinkNavWaypointMissionItem(position.get(0),position.get(1), 5, 30);
         MavController.addMissionItem(takeoff);
         MavController.addMissionItem(initialAltitude);
         MavController.addMissionItem(takePanarama);
@@ -354,6 +394,7 @@ public class MavlinkController extends AppCompatActivity{
         //add custom flight plan here
         for(int i = 0; i<cords.length; i++) {
             if(cords[i] != null) {
+                Log.e(TAG, "" + cords[i]);
                 addMavlinkCommands(1, (float) cords[i].getLatitude(), (float) cords[i].getLongitude(), (float) cords[i].altitude, (float) cords[i].getYaw());
                 addMavlinkCommands(2, 0, 0, 0, 0);
             }
@@ -361,7 +402,7 @@ public class MavlinkController extends AppCompatActivity{
 
 
         //Land at start position
-        ARMavlinkMissionItem land = ARMavlinkMissionItem.CreateMavlinkLandMissionItem(position.get(0),position.get(1),0,0);
+        ARMavlinkMissionItem land = ARMavlinkMissionItem.CreateMavlinkLandMissionItem(position.get(0),position.get(1),3,180);
         MavController.addMissionItem(land);
         Log.e(TAG, "COMMANDS LOADED");
     }
@@ -403,9 +444,9 @@ public class MavlinkController extends AppCompatActivity{
      */
     private void createFlightPlan() throws IOException {
         // save our mavlink file on android phone's directory
-        MAVLINK_STORAGE_DIRECTORY = getApplicationContext().getFilesDir().toString();
+        MAVLINK_STORAGE_DIRECTORY = mApplicationContext.getFilesDir().toString();
         File file = new File(MAVLINK_STORAGE_DIRECTORY);
-        Log.e(TAG, "MAVLINK STORAGE DIRECTORY: "+ getApplicationContext().getFilesDir());
+        Log.e(TAG, "MAVLINK STORAGE DIRECTORY: "+ mApplicationContext.getFilesDir());
 
 
         mavFile = new File(MAVLINK_STORAGE_DIRECTORY + File.separator + filename);

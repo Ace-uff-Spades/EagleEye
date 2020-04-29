@@ -91,6 +91,22 @@ public class Mavlink_Activity extends AppCompatActivity {
 
     private final String productIP = "192.168.42.1";
 
+<<<<<<< HEAD
+=======
+    //Constructor
+    /*public Mavlink_Activity() throws InterruptedException, ARControllerException {
+        calibrate();
+        fixGPS();
+        //File controller
+        try {
+            MavController = new ARMavlinkFileGenerator();
+        } catch (ARMavlinkException e) {
+            Log.e(TAG, "COULDN'T CREATE MAVLINK CONTROLLER");
+        }
+    }
+*/
+
+>>>>>>> d6e0dc2ea01908ff3f8d6bc6a2dd321a433f921d
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -421,7 +437,7 @@ public class Mavlink_Activity extends AppCompatActivity {
 
 
         //add custom flight plan here
-        addMavlinkCommands(1,40.326402, -74.551778,4,30);
+        addMavlinkCommands(1,40.379153, -74.525307,6,30);
         addMavlinkCommands(2, 0,0,0,0);
         addMavlinkCommands( )
         deviceController.getFeatureAnimation().sendStartVerticalReveal(Log.e(TAG);
@@ -534,7 +550,7 @@ public class Mavlink_Activity extends AppCompatActivity {
         list.add(ARCONTROLLER_DICTIONARY_KEY_ENUM.ARCONTROLLER_DICTIONARY_KEY_COMMON_FLIGHTPLANSTATE_AVAILABILITYSTATECHANGED);
         int FLIGHTPLANAVALIABLE = MavlinkFileController(list);
         //if its available then run the flightplan
-        if(FLIGHTPLANAVALIABLE == 1){
+        if(FLIGHTPLANAVALIABLE != 1){
 
             //running flightplan
             Log.d(TAG, "Executing Mavlink FLightplan: " + mavFile.getPath());
