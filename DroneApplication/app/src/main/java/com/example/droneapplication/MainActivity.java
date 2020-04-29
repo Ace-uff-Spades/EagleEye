@@ -128,8 +128,16 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
         bitmap = null;
 
         //THIS IS WHERE THE COORDINGATES OF THE INITIAL AREA TO FLY THROUGH GOES
-        cords = new Cord[4];
-        cords[0] = new Cord(40.326405, -74.551757, 4, 0);
+        cords = new Cord[9];
+        cords[0] = new Cord(40.344862, -74.560916, 4, 0);
+        cords[1] = new Cord(40.344870, -74.560589, 4, 0);
+        cords[2] = new Cord(40.344878, -74.560032, 4, 0);
+        cords[3] = new Cord(40.344854, -74.559480, 4, 0);
+        cords[4] = new Cord(40.344862, -74.560916, 4, 0);
+        cords[5] = new Cord(40.344547, -74.559496, 4, 0);
+        cords[6] = new Cord(40.344563, -74.560005, 4, 0);
+        cords[7] = new Cord(40.344575, -74.560499, 4, 0);
+        cords[8] = new Cord(40.344596, -74.561041, 4, 0);
     }
 
     @Override
@@ -165,9 +173,6 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
             }
         });
         mBluetoothController = new BluetoothController(mHandler,getApplicationContext());
-
-        //Creating Mavlink Controller
-        mMavlinkThread = new MavlinkController(cords);
         tiltDown = findViewById(R.id.tiltDown);
         findNetworks = findViewById(R.id.findNetworks);
         connectDrone = findViewById(R.id.connectBtn);
@@ -261,6 +266,8 @@ public class MainActivity extends AppCompatActivity implements ARDiscoveryServic
             @Override
             public void onClick(View view) {
                 createDeviceController();
+                //Creating Mavlink Controller
+                mMavlinkThread = new MavlinkController(cords);
             }
         });
 

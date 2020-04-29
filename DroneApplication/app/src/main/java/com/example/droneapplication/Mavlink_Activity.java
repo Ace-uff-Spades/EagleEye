@@ -12,6 +12,7 @@ import android.widget.Button;
 import android.widget.Scroller;
 import android.widget.TextView;
 
+import com.parrot.arsdk.arcommands.ARCOMMANDS_ANIMATION_PLAY_MODE_ENUM;
 import com.parrot.arsdk.arcommands.ARCOMMANDS_ARDRONE3_GPSSETTINGSSTATE_GPSUPDATESTATECHANGED_STATE_ENUM;
 import com.parrot.arsdk.arcommands.ARCOMMANDS_ARDRONE3_GPSSETTINGS_HOMETYPE_TYPE_ENUM;
 import com.parrot.arsdk.arcommands.ARCOMMANDS_ARDRONE3_PICTURESETTINGS_PICTUREFORMATSELECTION_TYPE_ENUM;
@@ -89,19 +90,6 @@ public class Mavlink_Activity extends AppCompatActivity {
     final String filename = "flightplan.mavlink5";
 
     private final String productIP = "192.168.42.1";
-
-    //Constructor
-    public Mavlink_Activity() throws InterruptedException, ARControllerException {
-        calibrate();
-        fixGPS();
-        //File controller
-        try {
-            MavController = new ARMavlinkFileGenerator();
-        } catch (ARMavlinkException e) {
-            Log.e(TAG, "COULDN'T CREATE MAVLINK CONTROLLER");
-        }
-    }
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -435,6 +423,8 @@ public class Mavlink_Activity extends AppCompatActivity {
         //add custom flight plan here
         addMavlinkCommands(1,40.326402, -74.551778,4,30);
         addMavlinkCommands(2, 0,0,0,0);
+        addMavlinkCommands( )
+        deviceController.getFeatureAnimation().sendStartVerticalReveal(Log.e(TAG);
 
 
         //Land at start position
@@ -473,6 +463,7 @@ public class Mavlink_Activity extends AppCompatActivity {
     private void createFlightPlan() throws IOException {
         // save our mavlink file on android phone's directory
         MAVLINK_STORAGE_DIRECTORY = getApplicationContext().getFilesDir().toString();
+
         File file = new File(MAVLINK_STORAGE_DIRECTORY);
         Log.e(TAG, "MAVLINK STORAGE DIRECTORY: "+ getApplicationContext().getFilesDir());
 
@@ -781,21 +772,6 @@ public class Mavlink_Activity extends AppCompatActivity {
         @Override
         public void didUploadProgress(Object arg, float percent) {
 
-        }
-    }
-
-    private class Cord {
-        private float lat;
-        private float lon;
-        private Cord(double lat, double lon){
-            this.lat = (float)lat;
-            this.lon = (float)lon;
-        }
-
-        @NonNull
-        @Override
-        public String toString() {
-            return "( " + lat + ", " + lon + " )";
         }
     }
 }
