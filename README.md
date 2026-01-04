@@ -17,4 +17,4 @@
 ---
 For a full presentation, motivation behind the project, technical details, and plans for the future. 
 
-Watch our Youtube video. [`EagleEye`](https://youtu.be/q-rHi6GOTD4)
+Watch our Youtube video. [`EagleEye`](https://www.youtube.com/watch?v=q-rHi6GOTD4)
